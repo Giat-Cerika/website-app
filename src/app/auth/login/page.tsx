@@ -12,57 +12,27 @@ export default function LoginPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [errors, setErrors] = useState({ username: "", password: "" });
 
-    const handleSubmit = async (e: React.FormEvent) => {
+     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setErrors({ username: "", password: "" });
+        setIsLoading(true);
 
-        let hasError = false;
-        const newErrors = { username: "", password: "" };
+        const response = await fetch("http://localhost:8080/api/v1/admin/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username, password }),
+        });
 
-        if (!username.trim()) {
-            newErrors.username = "Username harus diisi";
-            hasError = true;
-        }
+        const data = await response.json();
+        setIsLoading(false);
 
-        if (!password) {
-            newErrors.password = "Password harus diisi";
-            hasError = true;
-        }
-
-        if (hasError) {
-            setErrors(newErrors);
+        if (!response.ok) {
+            alert(data.message);
             return;
         }
 
-        try {
-            setIsLoading(true);
+        sessionStorage.setItem("token", data.data.access_token);
 
-            const response = await fetch("http://localhost:8080/api/v1/admin/login", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    username,
-                    password,
-                }),
-            });
-
-            const data = await response.json();
-
-            sessionStorage.setItem("token", data.data.access_token);
-
-            router.push("/admin/dashboard");
-
-            if (!response.ok) {
-                throw new Error(data.message || "Login gagal");
-            }
-
-        } catch (error: any) {
-            alert(`❌ Gagal login: ${error.message}`);
-        } finally {
-            setIsLoading(false);
-        }
+        router.push("/admin/dashboard");
     };
 
     return (
@@ -79,7 +49,7 @@ export default function LoginPage() {
                         <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full mb-4 shadow-lg transform transition-transform duration-300 hover:scale-110 hover:rotate-12">
                             <img
                                 src="/giat.jpeg"
-                                alt="Logo BEM"
+                                alt="Logo Giat Cerika"
                                 className="w-20 h-20 object-contain rounded-full"
                             />
                         </div>

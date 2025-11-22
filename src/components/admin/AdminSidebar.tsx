@@ -11,6 +11,7 @@ import {
   Video,
   LogOut,
   Newspaper,
+  Building2,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -25,6 +26,7 @@ export default function Sidebar({ isOpen }: SidebarProps) {
   const menuItems = [
     { icon: Home, label: "Dashboard", path: "/admin/dashboard" },
     { icon: FileText, label: "Informasi Kesehatan Gigi", path: "/admin/informasi" },
+    { icon: Building2, label: "Kelas", path: "/admin/kelas" },
     { icon: Newspaper, label: "Kuisioner", path: "/admin/kuisioner" },
     { icon: TrendingUp, label: "Prediksi Karies", path: "/admin/prediksi" },
     { icon: BookOpen, label: "Materi", path: "/admin/materi" },

@@ -1,9 +1,8 @@
-// app/dashboard/layout.tsx
 "use client";
 
 import { useState } from "react";
-import Sidebar from "./sidebar";
-import Header from "./header";
+import Sidebar from "@/components/admin/AdminSidebar";
+import Header from "@/components/admin/AdminHeader";
 
 export default function DashboardLayout({
   children,
