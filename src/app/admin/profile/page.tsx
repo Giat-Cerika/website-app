@@ -21,15 +21,18 @@ export default function ProfilePage() {
       try {
         const token = sessionStorage.getItem("token");
         if (!token) {
-        //   Swal.fire("Error", "Anda belum login!", "error");
+          //   Swal.fire("Error", "Anda belum login!", "error");
           return;
         }
 
-        const res = await fetch(`http://localhost:8080/api/v1/admin/me`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const res = await fetch(
+          `https://service-app-production-a205.up.railway.app/api/v1/admin/me`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
         if (!res.ok) {
           throw new Error("Gagal mengambil profil");
@@ -101,7 +104,9 @@ export default function ProfilePage() {
           <Shield className="w-6 h-6 text-purple-500" />
           <div>
             <p className="text-gray-600 text-sm">Peran</p>
-            <p className="font-semibold text-gray-800 capitalize">{profile.role}</p>
+            <p className="font-semibold text-gray-800 capitalize">
+              {profile.role}
+            </p>
           </div>
         </div>
 
