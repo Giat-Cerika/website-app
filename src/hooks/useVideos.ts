@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
-import { useVideoStore } from '@/stores';
+import { useEffect } from "react";
+import { useVideoStore } from "@/stores";
 
 export function useVideos() {
   const {
@@ -12,7 +12,7 @@ export function useVideos() {
     createVideo,
     updateVideo,
     deleteVideo,
-    incrementViewCount,
+    // incrementViewCount,
     clearError,
   } = useVideoStore();
 
@@ -32,7 +32,7 @@ export function useVideos() {
     createVideo,
     updateVideo,
     deleteVideo,
-    incrementViewCount,
+    // incrementViewCount,
     clearError,
   };
 }

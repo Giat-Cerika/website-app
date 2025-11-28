@@ -1,6 +1,6 @@
-import { create } from 'zustand';
-import { Video } from '@/types/video.types';
-import { videoService } from '@/services/video.service';
+import { create } from "zustand";
+import { Video } from "@/types/video.types";
+import { videoService } from "@/services/video.service";
 
 interface VideoState {
   videos: Video[];
