@@ -10,7 +10,6 @@ interface AuthState {
   isLoading: boolean;
   error: string | null;
   
-  // Actions
   login: (username: string, password: string) => Promise<void>;
   register: (data: any) => Promise<void>;
   logout: () => Promise<void>;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Swal from "sweetalert2";
 import { Plus, Pencil, Trash2, X, Eye, Search } from "lucide-react";
 import { useVideoStore } from "@/stores/useVideoStore";
@@ -23,7 +23,52 @@ export default function VideoPage() {
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [selected, setSelected] = useState<any>(null);
 
-    const per_page = 9;
+    const per_page = 10;
+    const descriptionRef = useRef<HTMLTextAreaElement | null>(null);
+
+    useEffect(() => {
+        if (!isEditOpen) return;
+
+        // Pastikan element ada
+        if (descriptionRef.current) {
+            // @ts-ignore
+            $(descriptionRef.current).summernote({
+                placeholder: "Tulis deskripsi video...",
+                tabsize: 1,
+                height: 100,
+                toolbar: [
+                    ["style", ["style"]],
+                    ["font", ["bold", "italic", "underline", "clear"]],
+                    ["fontname", ["fontname"]],
+                    ["color", ["color"]],
+                    ["para", ["ul", "ol", "paragraph"]],
+                    ["height", ["height"]],
+                    ["insert", ["link"]],
+                    ["view", ["fullscreen", "codeview"]],
+                ],
+                callbacks: {
+                    onChange: function (contents: string) {
+                        setSelected((prev: any) => ({
+                            ...prev,
+                            description: contents,
+                        }));
+                    },
+                },
+            });
+
+            // @ts-ignore
+            $(descriptionRef.current).summernote("code", selected.description);
+        }
+
+        return () => {
+            if (descriptionRef.current) {
+                try {
+                    // @ts-ignore
+                    $(descriptionRef.current).summernote("destroy");
+                } catch { }
+            }
+        };
+    }, [isEditOpen]);
 
     const getYouTubeThumbnail = (url?: string): string => {
         if (!url) return "/no-thumbnail.png";
@@ -122,7 +167,6 @@ export default function VideoPage() {
                 />
             </div>
 
-            {/* LIST */}
             {isLoading ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     {[...Array(6)].map((_, i) => (
@@ -196,8 +240,8 @@ export default function VideoPage() {
                     onClick={() => setPage((prev) => Math.max(1, prev - 1))}
                     disabled={page === 1}
                     className={`px-4 py-2 rounded-lg border text-gray-700 ${page === 1
-                            ? "bg-gray-200 cursor-not-allowed"
-                            : "bg-white hover:bg-gray-100"
+                        ? "bg-gray-200 cursor-not-allowed"
+                        : "bg-white hover:bg-gray-100"
                         }`}
                 >
                     Prev
@@ -211,8 +255,8 @@ export default function VideoPage() {
                     onClick={() => setPage((prev) => prev + 1)}
                     disabled={isLastPage}
                     className={`px-4 py-2 rounded-lg border text-gray-700 ${isLastPage
-                            ? "bg-gray-200 cursor-not-allowed"
-                            : "bg-white hover:bg-gray-100"
+                        ? "bg-gray-200 cursor-not-allowed"
+                        : "bg-white hover:bg-gray-100"
                         }`}
                 >
                     Next
@@ -222,11 +266,11 @@ export default function VideoPage() {
             {/* EDIT MODAL */}
             {isEditOpen && selected && (
                 <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 px-4 modal-backdrop">
-                    <div className="bg-white rounded-xl p-6 w-full max-w-2xl modal-content">
-                        <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-2xl font-bold text-gray-800">
-                                Edit Video
-                            </h2>
+                    <div className="bg-white rounded-xl p-6 w-full max-w-2xl modal-content max-h-[90vh] flex flex-col">
+
+                        {/* HEADER */}
+                        <div className="flex justify-between items-center mb-6 shrink-0">
+                            <h2 className="text-2xl font-bold text-gray-800">Edit Video</h2>
                             <button
                                 onClick={() => setIsEditOpen(false)}
                                 className="hover:bg-gray-100 p-2 rounded-lg"
@@ -235,30 +279,23 @@ export default function VideoPage() {
                             </button>
                         </div>
 
-                        <div className="space-y-5">
+                        {/* BODY — SCROLL */}
+                        <div className="space-y-5 max-h-[65vh] overflow-y-auto pr-2">
+
                             {/* JUDUL */}
                             <label className="block">
-                                <span className="text-gray-700 font-medium">
-                                    Judul Video
-                                </span>
+                                <span className="text-gray-700 font-medium">Judul Video</span>
                                 <input
                                     type="text"
                                     className="w-full text-gray-800 mt-2 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                                     value={selected.title}
-                                    onChange={(e) =>
-                                        setSelected({
-                                            ...selected,
-                                            title: e.target.value,
-                                        })
-                                    }
+                                    onChange={(e) => setSelected({ ...selected, title: e.target.value })}
                                 />
                             </label>
 
                             {/* URL */}
                             <label className="block">
-                                <span className="text-gray-700 font-medium">
-                                    Link YouTube
-                                </span>
+                                <span className="text-gray-700 font-medium">Link YouTube</span>
                                 <input
                                     type="text"
                                     className="w-full text-gray-800 mt-2 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
@@ -275,24 +312,17 @@ export default function VideoPage() {
 
                             {/* DESKRIPSI */}
                             <label className="block">
-                                <span className="text-gray-700 font-medium">
-                                    Deskripsi
-                                </span>
+                                <span className="text-gray-700 font-medium">Deskripsi</span>
                                 <textarea
-                                    className="w-full text-gray-800 mt-2 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 resize-none"
-                                    rows={2}
-                                    value={selected.description}
-                                    onChange={(e) =>
-                                        setSelected({
-                                            ...selected,
-                                            description: e.target.value,
-                                        })
-                                    }
+                                    ref={descriptionRef}
+                                    defaultValue={selected.description}
+                                    className="mt-2"
                                 />
                             </label>
                         </div>
 
-                        <div className="flex justify-end gap-4 mt-8">
+                        {/* FOOTER */}
+                        <div className="flex justify-end gap-4 mt-6 pt-4 border-t border-gray-200 shrink-0">
                             <button
                                 className="px-6 py-3 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400"
                                 onClick={() => setIsEditOpen(false)}
@@ -309,6 +339,7 @@ export default function VideoPage() {
                     </div>
                 </div>
             )}
+
         </div>
     );
 }

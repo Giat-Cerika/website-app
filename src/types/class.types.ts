@@ -3,8 +3,22 @@ export interface Class {
   name_class: string;
   grade: string;
   teacher: string;
-  createdAt: string;
-  updatedAt: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Pagination {
+  current_page: number;
+  per_page: number;
+  total_data: number;
+  total_pages: number;
+}
+
+export interface ClassResponse {
+  status_code: number;
+  message: string;
+  data: Class[];
+  pagination: Pagination;
 }
 
 export interface CreateClassRequest {

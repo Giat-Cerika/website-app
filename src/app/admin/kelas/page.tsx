@@ -1,21 +1,36 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus } from "lucide-react";
+import { Plus, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import AutoTable from "@/components/ui/table";
 import { useClassStore } from "@/stores/useClassStore";
 import { toastSuccess, toastError } from "@/lib/toast";
 import Swal from "sweetalert2";
 
 export default function KelasPage() {
-  const { classes, isLoading, fetchClasses, updateClass, deleteClass } = useClassStore();
+  const { classes, isLoading, fetchClasses, updateClass, deleteClass, pagination } =
+    useClassStore();
+
   const [isOpen, setIsOpen] = useState(false);
   const [editItem, setEditItem] = useState<any>(null);
   const [isAnimating, setIsAnimating] = useState(false);
 
+  const [searchInput, setSearchInput] = useState("");
+  const [page, setPage] = useState(1);
+  const per_page = 10;
+
   useEffect(() => {
-    fetchClasses();
-  }, [fetchClasses]);
+    fetchClasses({ page, per_page, search: searchInput });
+  }, [page, fetchClasses]);
+
+  useEffect(() => {
+    const delaySearch = setTimeout(() => {
+      setPage(1);
+      fetchClasses({ page: 1, per_page, search: searchInput });
+    }, 500);
+
+    return () => clearTimeout(delaySearch);
+  }, [searchInput, fetchClasses, per_page]);
 
   const openEditModal = (item: any) => {
     setEditItem(item);
@@ -39,7 +54,7 @@ export default function KelasPage() {
       text: "Apakah Anda yakin ingin menyimpan perubahan ini?",
       icon: "question",
       showCancelButton: true,
-      confirmButtonText: "Simpan",
+      confirmButtonText: "Ya, simpan!",
       cancelButtonText: "Batal",
     });
 
@@ -47,7 +62,7 @@ export default function KelasPage() {
       try {
         await updateClass(editItem.id, editItem);
         toastSuccess("Data kelas berhasil diperbarui");
-        fetchClasses();
+        fetchClasses({ page, per_page, search: searchInput });
         closeModal();
       } catch (error: any) {
         toastError(error.message || "Gagal memperbarui data kelas");
@@ -56,11 +71,9 @@ export default function KelasPage() {
   };
 
   const handleDelete = async (item: any) => {
-    if (!item) return;
-
     const result = await Swal.fire({
       title: "Hapus kelas?",
-      text: `Apakah Anda yakin ingin menghapus kelas ${item.name_class}?`,
+      text: `Yakin menghapus kelas ${item.name_class}?`,
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#d33",
@@ -72,7 +85,12 @@ export default function KelasPage() {
       try {
         await deleteClass(item.id);
         toastSuccess("Data kelas berhasil dihapus");
-        fetchClasses();
+        
+        if (classes.length === 1 && page > 1) {
+          setPage(page - 1);
+        } else {
+          fetchClasses({ page, per_page, search: searchInput });
+        }
       } catch (error: any) {
         toastError(error.message || "Gagal menghapus kelas");
       }
@@ -85,86 +103,289 @@ export default function KelasPage() {
     { key: "teacher", label: "Wali Kelas" },
   ];
 
+  const renderPagination = () => {
+    if (!pagination || pagination.total_pages <= 1) return null;
+
+    const currentPage = pagination.current_page;
+    const totalPages = pagination.total_pages;
+    const pages = [];
+    
+    const maxVisible = 10;
+    let startPage = Math.max(1, currentPage - 2);
+    let endPage = Math.min(totalPages, currentPage + 2);
+
+    if (currentPage <= 3) {
+      endPage = Math.min(totalPages, maxVisible);
+    }
+
+    if (currentPage >= totalPages - 2) {
+      startPage = Math.max(1, totalPages - maxVisible + 1);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+
+    return (
+      <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-6 bg-white p-4 rounded-lg shadow-sm">
+        <div className="flex items-center gap-2 order-2 sm:order-1">
+          <button
+            onClick={() => setPage(currentPage - 1)}
+            disabled={currentPage === 1 || isLoading}
+            className="p-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white transition-all"
+            title="Halaman sebelumnya"
+          >
+            <ChevronLeft className="w-5 h-5 text-gray-600" />
+          </button>
+
+          {startPage > 1 && (
+            <>
+              <button
+                onClick={() => setPage(1)}
+                disabled={isLoading}
+                className="hidden sm:flex px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-100 transition-all text-sm font-medium disabled:opacity-40"
+              >
+                1
+              </button>
+              {startPage > 2 && (
+                <span className="hidden sm:inline px-2 text-gray-400">...</span>
+              )}
+            </>
+          )}
+
+          {pages.map((p) => (
+            <button
+              key={p}
+              onClick={() => setPage(p)}
+              disabled={isLoading}
+              className={`px-3 py-1.5 rounded-lg border transition-all text-sm font-medium min-w-[40px] ${
+                p === currentPage
+                  ? "bg-blue-600 text-white border-blue-600 shadow-md"
+                  : "border-gray-300 hover:bg-gray-100 text-gray-700"
+              } disabled:opacity-40`}
+            >
+              {p}
+            </button>
+          ))}
+
+          {endPage < totalPages && (
+            <>
+              {endPage < totalPages - 1 && (
+                <span className="hidden sm:inline px-2 text-gray-400">...</span>
+              )}
+              <button
+                onClick={() => setPage(totalPages)}
+                disabled={isLoading}
+                className="hidden sm:flex px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-100 transition-all text-sm font-medium disabled:opacity-40"
+              >
+                {totalPages}
+              </button>
+            </>
+          )}
+
+          <button
+            onClick={() => setPage(currentPage + 1)}
+            disabled={currentPage === totalPages || isLoading}
+            className="p-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white transition-all"
+            title="Halaman selanjutnya"
+          >
+            <ChevronRight className="w-5 h-5 text-gray-600" />
+          </button>
+        </div>
+
+        <div className="text-sm text-gray-600 order-3 hidden sm:block">
+          Halaman <span className="font-semibold">{currentPage}</span> dari{" "}
+          <span className="font-semibold">{totalPages}</span>
+        </div>
+      </div>
+    );
+  };
+
   return (
-    <div className="p-6">
-      <div className="flex items-center justify-between mb-6">
+    <div className="p-6 bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+      <style>{`
+        @keyframes slideInDown {
+          from {
+            opacity: 0;
+            transform: translateY(-30px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+
+        .animate-slideInDown {
+          animation: slideInDown 0.6s ease-out;
+        }
+
+        .animate-fadeIn {
+          animation: fadeIn 0.5s ease-out;
+        }
+
+        .loading-pulse {
+          animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse {
+          0%, 100% {
+            opacity: 1;
+          }
+          50% {
+            opacity: 0.5;
+          }
+        }
+      `}</style>
+
+      <div className="flex items-center justify-between mb-6 animate-slideInDown">
         <h1 className="text-3xl font-bold text-gray-800">Data Kelas</h1>
         <a
           href="/admin/kelas/create"
-          className="px-4 py-2 bg-blue-600 text-white rounded-xl flex items-center gap-2 hover:bg-blue-700 transition"
+          className="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl flex items-center gap-2 hover:from-blue-700 hover:to-blue-800 transition shadow hover:shadow-lg active:scale-95 duration-300 font-medium"
         >
           <Plus className="w-5 h-5" /> Tambah Kelas
         </a>
       </div>
 
-      <AutoTable
-        data={classes}
-        fields={fields}
-        onEdit={openEditModal}
-        onDelete={handleDelete}
-      />
+      <div className="mb-6 animate-fadeIn">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Cari nama kelas"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            className="w-26 text-gray-800 pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all bg-white shadow-sm"
+          />
+          {isLoading && (
+            <div className="absolute right-3 top-1/2 -translate-y-1/2">
+              <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+            </div>
+          )}
+        </div>
+        {searchInput && (
+          <div className="mt-2 text-sm text-gray-600">
+            {isLoading ? (
+              <span className="flex items-center gap-2">
+                <span className="loading-pulse">Mencari...</span>
+              </span>
+            ) : (
+              <span>
+                Ditemukan <span className="font-semibold text-gray-800">{pagination?.total_data || 0}</span> hasil
+                {searchInput && ` untuk "${searchInput}"`}
+              </span>
+            )}
+          </div>
+        )}
+      </div>
+
+      <div className="animate-fadeIn">
+        {classes.length === 0 && !isLoading ? (
+          <div className="bg-white rounded-lg shadow-sm p-12 text-center">
+            <div className="text-gray-400 mb-4">
+              <Search className="w-16 h-16 mx-auto" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-700 mb-2">
+              {searchInput ? "Tidak ada hasil ditemukan" : "Belum ada data kelas"}
+            </h3>
+            <p className="text-gray-500 text-sm">
+              {searchInput
+                ? `Tidak ditemukan kelas dengan kata kunci "${searchInput}"`
+                : "Klik tombol Tambah Kelas untuk membuat data baru"}
+            </p>
+          </div>
+        ) : (
+          <AutoTable
+            data={classes}
+            fields={fields}
+            onEdit={openEditModal}
+            onDelete={handleDelete}
+          />
+        )}
+      </div>
+
+      {renderPagination()}
 
       {isOpen && editItem && (
         <div
-          className={`fixed inset-0 bg-black/30 backdrop-blur-sm flex justify-center items-center z-50 transition-opacity duration-200 ${isAnimating ? "opacity-100" : "opacity-0"
-            }`}
+          className={`fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-center items-center z-50 transition-opacity duration-200 ${
+            isAnimating ? "opacity-100" : "opacity-0"
+          }`}
+          onClick={closeModal}
         >
           <div
-            className={`bg-white p-6 rounded-xl shadow-xl w-full max-w-md transition-transform duration-200 ${isAnimating ? "translate-y-0 opacity-100" : "-translate-y-4 opacity-0"
-              }`}
+            className={`bg-white p-6 rounded-xl shadow-xl w-full max-w-md transition-transform duration-200 ${
+              isAnimating ? "translate-y-0 opacity-100" : "-translate-y-4 opacity-0"
+            }`}
+            onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="text-xl font-bold mb-4 text-gray-800">Edit Kelas</h2>
+            <h2 className="text-2xl font-bold mb-6 text-gray-800">Edit Kelas</h2>
 
-            <div className="flex flex-col gap-3">
-              <span className="text-gray-700 font-medium flex items-center gap-2">
-                Nama Kelas
-              </span>
-              <input
-                className="w-full text-gray-700 p-2 border rounded-lg"
-                value={editItem.name_class}
-                onChange={(e) =>
-                  setEditItem({ ...editItem, name_class: e.target.value })
-                }
-                placeholder="Nama Kelas"
-              />
+            <div className="flex flex-col gap-4">
+              <div>
+                <label className="block font-medium text-gray-700 mb-2">
+                  Nama Kelas <span className="text-red-500">*</span>
+                </label>
+                <input
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                  value={editItem.name_class}
+                  onChange={(e) =>
+                    setEditItem({ ...editItem, name_class: e.target.value })
+                  }
+                  placeholder="Contoh: Kelas A"
+                />
+              </div>
 
-              <span className="text-gray-700 font-medium flex items-center gap-2">
-                Grade
-              </span>
-              <input
-                className="w-full text-gray-700 p-2 border rounded-lg"
-                value={editItem.grade}
-                onChange={(e) =>
-                  setEditItem({ ...editItem, grade: e.target.value })
-                }
-                placeholder="Grade"
-              />
+              <div>
+                <label className="block font-medium text-gray-700 mb-2">
+                  Grade <span className="text-red-500">*</span>
+                </label>
+                <input
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                  value={editItem.grade}
+                  onChange={(e) =>
+                    setEditItem({ ...editItem, grade: e.target.value })
+                  }
+                  placeholder="Contoh: 1, 2, 3"
+                />
+              </div>
 
-              <span className="text-gray-700 font-medium flex items-center gap-2">
-                Guru
-              </span>
-              <input
-                className="w-full text-gray-700 p-2 border rounded-lg"
-                value={editItem.teacher}
-                onChange={(e) =>
-                  setEditItem({ ...editItem, teacher: e.target.value })
-                }
-                placeholder="Wali Kelas"
-              />
+              <div>
+                <label className="block font-medium text-gray-700 mb-2">
+                  Wali Kelas <span className="text-red-500">*</span>
+                </label>
+                <input
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                  value={editItem.teacher}
+                  onChange={(e) =>
+                    setEditItem({ ...editItem, teacher: e.target.value })
+                  }
+                  placeholder="Nama wali kelas"
+                />
+              </div>
             </div>
 
             <div className="flex justify-end gap-3 mt-6">
               <button
                 onClick={closeModal}
-                className="px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400"
+                className="px-6 py-3 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-all active:scale-95 font-medium"
               >
                 Batal
               </button>
               <button
                 onClick={handleSaveEdit}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all active:scale-95 font-medium shadow-lg"
               >
-                Simpan
+                Simpan Perubahan
               </button>
             </div>
           </div>
