@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import axiosInstance from "@/lib/axios";
 import { toastSuccess, toastError } from "@/lib/toast";
 
-export default function CreateMateriPage() {
+export default function CreateVideoPage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [videoPath, setVideoPath] = useState("");
@@ -49,7 +49,7 @@ export default function CreateMateriPage() {
       <Card className="shadow-md border border-gray-200">
         <CardHeader>
           <CardTitle className="text-2xl font-bold text-gray-800">
-            Tambah Materi Baru
+            Tambah Video Baru
           </CardTitle>
         </CardHeader>
         < CardContent >
@@ -57,10 +57,10 @@ export default function CreateMateriPage() {
 
             <div>
               <label className="block mb-1 font-medium text-gray-700">
-                Judul Materi
+                Judul Video
               </label>
               <Input
-                placeholder="Masukkan judul materi"
+                placeholder="Masukkan judul video"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 required
@@ -73,7 +73,7 @@ export default function CreateMateriPage() {
                 Deskripsi
               </label>
               <Textarea
-                placeholder="Masukkan deskripsi materi"
+                placeholder="Masukkan deskripsi video"
                 rows={4}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
@@ -100,7 +100,7 @@ export default function CreateMateriPage() {
               disabled={loading}
               className="w-full bg-blue-600 hover:bg-blue-700 text-white"
             >
-              {loading ? "Menyimpan..." : "Simpan Materi"}
+              {loading ? "Menyimpan..." : "Simpan Video"}
             </Button>
 
           </form>

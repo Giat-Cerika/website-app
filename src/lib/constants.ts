@@ -1,4 +1,3 @@
-// lib/constants.ts
 export const API_ENDPOINTS = {
   AUTH: {
     LOGIN: '/admin/login',
@@ -14,6 +13,10 @@ export const API_ENDPOINTS = {
   VIDEOS: {
     BASE: '/video',
     BY_ID: (id: string) => `/video/${id}`,
+  },
+  MATERIALS: {
+    BASE: '/material',
+    BY_ID: (id: string) => `/material/${id}`,
   },
   CLASS: {
     BASE: '/class',
