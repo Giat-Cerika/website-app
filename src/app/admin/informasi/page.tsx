@@ -13,9 +13,6 @@ interface Article {
 }
 
 export default function InformasiPage() {
-  // ===============================
-  // 📌 DATA STATIS (Dummy Data)
-  // ===============================
   const initialData: Article[] = [
     {
       id: "1",
@@ -49,9 +46,6 @@ export default function InformasiPage() {
   const [articles, setArticles] = useState<Article[]>(initialData);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // ===============================
-  // 🔍 FITUR SEARCH (Local)
-  // ===============================
   useEffect(() => {
     if (searchQuery.trim() === "") {
       setArticles(initialData);
@@ -65,9 +59,6 @@ export default function InformasiPage() {
     setArticles(filtered);
   }, [searchQuery]);
 
-  // ===============================
-  // 🗑️ HAPUS
-  // ===============================
   const handleDelete = (id: string) => {
     if (confirm("Yakin ingin menghapus artikel ini?")) {
       setArticles((prev) => prev.filter((a) => a.id !== id));
