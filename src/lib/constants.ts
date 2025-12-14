@@ -26,6 +26,10 @@ export const API_ENDPOINTS = {
     BASE: '/quizType',
     BY_ID: (id: string) => `/quizType/${id}`,
   },
+  QUIZ: {
+    BASE: '/quiz',
+    BY_ID: (id: string) => `/quiz/${id}`,
+  },
   QUESTIONNAIRES: {
     BASE: '/questionnaires',
     BY_ID: (id: string) => `/questionnaires/${id}`,

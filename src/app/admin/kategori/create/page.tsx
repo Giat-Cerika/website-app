@@ -41,6 +41,13 @@ export default function CreateKategoriPage() {
 
   return (
     <div className="p-6 max-w-2xl mx-auto">
+      <Button
+        className="mb-4 flex items-center gap-2"
+        onClick={() => router.back()}
+      >
+        <ArrowLeft className="w-4 h-4" /> Kembali
+      </Button>
+      
       <Card>
         <CardHeader>
           <CardTitle className="text-2xl">Tambah Kategori</CardTitle>

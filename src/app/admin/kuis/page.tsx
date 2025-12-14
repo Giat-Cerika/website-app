@@ -3,34 +3,36 @@
 import { useEffect, useState } from "react";
 import { Plus, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import AutoTable from "@/components/ui/table";
-import { useClassStore } from "@/stores/useClassStore";
+import { useQuizStore } from "@/stores/useQuizStore";
 import { toastSuccess, toastError } from "@/lib/toast";
 import Swal from "sweetalert2";
+import { useRouter } from "next/navigation";
 
-export default function KelasPage() {
-  const { classes, isLoading, fetchClasses, updateClass, deleteClass, pagination } =
-    useClassStore();
+export default function KuisPage() {
+  const { quizes, isLoading, fetchQuizes, updateQuiz, deleteQuiz, pagination } =
+    useQuizStore();
 
   const [isOpen, setIsOpen] = useState(false);
   const [editItem, setEditItem] = useState<any>(null);
   const [isAnimating, setIsAnimating] = useState(false);
+  const router = useRouter();
 
   const [searchInput, setSearchInput] = useState("");
   const [page, setPage] = useState(1);
   const per_page = 10;
 
   useEffect(() => {
-    fetchClasses({ page, per_page, search: searchInput });
-  }, [page, fetchClasses]);
+    fetchQuizes({ page, per_page, search: searchInput });
+  }, [page, fetchQuizes]);
 
   useEffect(() => {
     const delaySearch = setTimeout(() => {
       setPage(1);
-      fetchClasses({ page: 1, per_page, search: searchInput });
+      fetchQuizes({ page: 1, per_page, search: searchInput });
     }, 500);
 
     return () => clearTimeout(delaySearch);
-  }, [searchInput, fetchClasses, per_page]);
+  }, [searchInput, fetchQuizes, per_page]);
 
   const openEditModal = (item: any) => {
     setEditItem(item);
@@ -46,6 +48,11 @@ export default function KelasPage() {
     }, 200);
   };
 
+  const handleView = (item: any) => {
+    router.push(`/admin/kuis/${item.id}`);
+  };
+
+
   const handleSaveEdit = async () => {
     if (!editItem) return;
 
@@ -60,20 +67,20 @@ export default function KelasPage() {
 
     if (result.isConfirmed) {
       try {
-        await updateClass(editItem.id, editItem);
-        toastSuccess("Data kelas berhasil diperbarui");
-        fetchClasses({ page, per_page, search: searchInput });
+        await updateQuiz(editItem.id, editItem);
+        toastSuccess("Data kuis berhasil diperbarui");
+        fetchQuizes({ page, per_page, search: searchInput });
         closeModal();
       } catch (error: any) {
-        toastError(error.message || "Gagal memperbarui data kelas");
+        toastError(error.message || "Gagal memperbarui data kuis");
       }
     }
   };
 
   const handleDelete = async (item: any) => {
     const result = await Swal.fire({
-      title: "Hapus kelas?",
-      text: `Yakin menghapus kelas ${item.name_class}?`,
+      title: "Hapus kuis?",
+      text: `Yakin menghapus kuis ${item.name_class}?`,
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#d33",
@@ -83,24 +90,24 @@ export default function KelasPage() {
 
     if (result.isConfirmed) {
       try {
-        await deleteClass(item.id);
-        toastSuccess("Data kelas berhasil dihapus");
+        await deleteQuiz(item.id);
+        toastSuccess("Data kuis berhasil dihapus");
 
-        if (classes.length === 1 && page > 1) {
+        if (quizes.length === 1 && page > 1) {
           setPage(page - 1);
         } else {
-          fetchClasses({ page, per_page, search: searchInput });
+          fetchQuizes({ page, per_page, search: searchInput });
         }
       } catch (error: any) {
-        toastError(error.message || "Gagal menghapus kelas");
+        toastError(error.message || "Gagal menghapus kuis");
       }
     }
   };
 
   const fields = [
-    { key: "name_class", label: "Nama Kelas" },
-    { key: "grade", label: "Grade" },
-    { key: "teacher", label: "Wali Kelas" },
+    { key: "title", label: "Judul Kuis" },
+    { key: "quiz_type", label: "Tipe" },
+    { key: "status", label: "Status" },
   ];
 
   const renderPagination = () => {
@@ -246,12 +253,12 @@ export default function KelasPage() {
       `}</style>
 
       <div className="flex items-center justify-between mb-6 animate-slideInDown">
-        <h1 className="text-3xl font-bold text-gray-800">Data Kelas</h1>
+        <h1 className="text-3xl font-bold text-gray-800">Data Kuis</h1>
         <a
-          href="/admin/kelas/create"
+          href="/admin/kuis/create"
           className="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl flex items-center gap-2 hover:from-blue-700 hover:to-blue-800 transition shadow hover:shadow-lg active:scale-95 duration-300 font-medium"
         >
-          <Plus className="w-5 h-5" /> Tambah Kelas
+          <Plus className="w-5 h-5" /> Tambah Kuis
         </a>
       </div>
 
@@ -260,7 +267,7 @@ export default function KelasPage() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
           <input
             type="text"
-            placeholder="Cari nama kelas"
+            placeholder="Cari nama kuis"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             className="w-26 text-gray-800 pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all bg-white shadow-sm"
@@ -290,24 +297,25 @@ export default function KelasPage() {
               />
             ))}
           </div>
-        ) : classes.length === 0 ? (
+        ) : quizes.length === 0 ? (
           <div className="bg-white rounded-lg shadow-sm p-12 text-center">
             <div className="text-gray-400 mb-4">
               <Search className="w-16 h-16 mx-auto" />
             </div>
             <h3 className="text-lg font-semibold text-gray-700 mb-2">
-              {searchInput ? "Tidak ada hasil ditemukan" : "Belum ada data kelas"}
+              {searchInput ? "Tidak ada hasil ditemukan" : "Belum ada data kuis"}
             </h3>
             <p className="text-gray-500 text-sm">
               {searchInput
-                ? `Tidak ditemukan kelas dengan kata kunci "${searchInput}"`
-                : "Klik tombol Tambah Kelas untuk membuat data baru"}
+                ? `Tidak ditemukan kuis dengan kata kunci "${searchInput}"`
+                : "Klik tombol Tambah Kuis untuk membuat data baru"}
             </p>
           </div>
         ) : (
           <AutoTable
-            data={classes}
+            data={quizes}
             fields={fields}
+            onView={handleView}
             onEdit={openEditModal}
             onDelete={handleDelete}
           />
@@ -327,12 +335,12 @@ export default function KelasPage() {
               }`}
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="text-2xl font-bold mb-6 text-gray-800">Edit Kelas</h2>
+            <h2 className="text-2xl font-bold mb-6 text-gray-800">Edit Kuis</h2>
 
             <div className="flex flex-col gap-4">
               <div>
                 <label className="block font-medium text-gray-700 mb-2">
-                  Nama Kelas <span className="text-red-500">*</span>
+                  Nama Kuis <span className="text-red-500">*</span>
                 </label>
                 <input
                   className="w-full p-3 text-gray-800 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
@@ -340,7 +348,7 @@ export default function KelasPage() {
                   onChange={(e) =>
                     setEditItem({ ...editItem, name_class: e.target.value })
                   }
-                  placeholder="Contoh: Kelas A"
+                  placeholder="Contoh: Kuis A"
                 />
               </div>
 
@@ -360,7 +368,7 @@ export default function KelasPage() {
 
               <div>
                 <label className="block font-medium text-gray-700 mb-2">
-                  Wali Kelas <span className="text-red-500">*</span>
+                  Wali Kuis <span className="text-red-500">*</span>
                 </label>
                 <input
                   className="w-full text-gray-800 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
@@ -368,7 +376,7 @@ export default function KelasPage() {
                   onChange={(e) =>
                     setEditItem({ ...editItem, teacher: e.target.value })
                   }
-                  placeholder="Nama wali kelas"
+                  placeholder="Nama wali kuis"
                 />
               </div>
             </div>

@@ -25,7 +25,7 @@ export default function Sidebar({ isOpen }: SidebarProps) {
 
   const menuItems = [
     { icon: Home, label: "Dashboard", path: "/admin/dashboard" },
-    { icon: FileText, label: "Informasi Kesehatan Gigi", path: "/admin/informasi" },
+    { icon: FileText, label: "Kuis", path: "/admin/kuis" },
     { icon: Building2, label: "Kelas", path: "/admin/kelas" },
     { icon: Newspaper, label: "Kategori Kuis", path: "/admin/kategori" },
     { icon: TrendingUp, label: "Prediksi Karies", path: "/admin/prediksi" },

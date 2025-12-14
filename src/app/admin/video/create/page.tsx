@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import axiosInstance from "@/lib/axios";
 import { toastSuccess, toastError } from "@/lib/toast";
+import { ArrowLeft } from 'lucide-react';
 
 export default function CreateVideoPage() {
   const [title, setTitle] = useState("");
@@ -46,6 +47,13 @@ export default function CreateVideoPage() {
 
   return (
     <div className="p-6 max-w-3xl mx-auto">
+      <Button
+        className="mb-4 flex items-center gap-2"
+        onClick={() => router.back()}
+      >
+        <ArrowLeft className="w-4 h-4" /> Kembali
+      </Button>
+
       <Card className="shadow-md border border-gray-200">
         <CardHeader>
           <CardTitle className="text-2xl font-bold text-gray-800">

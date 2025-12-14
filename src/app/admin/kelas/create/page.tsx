@@ -42,6 +42,13 @@ export default function CreateKelasPage() {
 
   return (
     <div className="p-6 max-w-2xl mx-auto">
+      <Button
+        className="mb-4 flex items-center gap-2"
+        onClick={() => router.back()}
+      >
+        <ArrowLeft className="w-4 h-4" /> Kembali
+      </Button>
+
       <Card>
         <CardHeader>
           <CardTitle className="text-2xl">Tambah Kelas</CardTitle>
@@ -54,7 +61,6 @@ export default function CreateKelasPage() {
                 name="name_class"
                 value={form.name_class}
                 onChange={handleChange}
-                placeholder="Contoh: Kelas A"
               />
             </div>
 
@@ -64,7 +70,6 @@ export default function CreateKelasPage() {
                 name="grade"
                 value={form.grade}
                 onChange={handleChange}
-                placeholder="Contoh: 7"
               />
             </div>
 
@@ -74,7 +79,6 @@ export default function CreateKelasPage() {
                 name="teacher"
                 value={form.teacher}
                 onChange={handleChange}
-                placeholder="Contoh: Ibu Siti"
               />
             </div>
 

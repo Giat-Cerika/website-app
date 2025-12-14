@@ -286,11 +286,9 @@ export default function CreateMateriPage() {
                 <CardContent>
                     <form onSubmit={handleSubmit} className="space-y-6">
 
-                        {/* JUDUL */}
                         <div>
                             <label className="block mb-2 font-medium text-gray-700 flex items-center gap-2">
-                                <span className="text-blue-600">📝</span>
-                                Judul Materi <span className="text-red-500">*</span>
+                                Judul Materi
                             </label>
                             <Input
                                 placeholder="Contoh: Belajar Angka 1-10"
@@ -301,11 +299,9 @@ export default function CreateMateriPage() {
                             />
                         </div>
 
-                        {/* COVER IMAGE */}
                         <div>
                             <label className="block mb-2 font-medium text-gray-700 flex items-center gap-2">
-                                <span className="text-purple-600">🖼️</span>
-                                Cover Materi <span className="text-red-500">*</span>
+                                Cover Materi
                             </label>
 
                             {coverPreview ? (
@@ -344,11 +340,9 @@ export default function CreateMateriPage() {
                             )}
                         </div>
 
-                        {/* GALLERY IMAGES */}
                         <div>
                             <label className="block mb-2 font-medium text-gray-700 flex items-center gap-2">
-                                <span className="text-green-600">📸</span>
-                                Galeri Gambar <span className="text-red-500">*</span>
+                                Galeri Gambar
                                 <span className="text-sm text-gray-500 font-normal">
                                     (Min 1, Max 10 gambar)
                                 </span>
@@ -388,11 +382,9 @@ export default function CreateMateriPage() {
                             </div>
                         </div>
 
-                        {/* DESKRIPSI - SUMMERNOTE */}
                         <div>
                             <label className="block mb-2 font-medium text-gray-700 flex items-center gap-2">
-                                <span className="text-orange-600">📄</span>
-                                Deskripsi Materi <span className="text-red-500">*</span>
+                                Deskripsi Materi
                             </label>
                             <div ref={editorRef}></div>
                         </div>
