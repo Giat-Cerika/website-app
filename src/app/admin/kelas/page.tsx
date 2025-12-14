@@ -85,7 +85,7 @@ export default function KelasPage() {
       try {
         await deleteClass(item.id);
         toastSuccess("Data kelas berhasil dihapus");
-        
+
         if (classes.length === 1 && page > 1) {
           setPage(page - 1);
         } else {
@@ -109,7 +109,7 @@ export default function KelasPage() {
     const currentPage = pagination.current_page;
     const totalPages = pagination.total_pages;
     const pages = [];
-    
+
     const maxVisible = 10;
     let startPage = Math.max(1, currentPage - 2);
     let endPage = Math.min(totalPages, currentPage + 2);
@@ -158,11 +158,10 @@ export default function KelasPage() {
               key={p}
               onClick={() => setPage(p)}
               disabled={isLoading}
-              className={`px-3 py-1.5 rounded-lg border transition-all text-sm font-medium min-w-[40px] ${
-                p === currentPage
+              className={`px-3 py-1.5 rounded-lg border transition-all text-sm font-medium min-w-[40px] ${p === currentPage
                   ? "bg-blue-600 text-white border-blue-600 shadow-md"
                   : "border-gray-300 hover:bg-gray-100 text-gray-700"
-              } disabled:opacity-40`}
+                } disabled:opacity-40`}
             >
               {p}
             </button>
@@ -266,11 +265,6 @@ export default function KelasPage() {
             onChange={(e) => setSearchInput(e.target.value)}
             className="w-26 text-gray-800 pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all bg-white shadow-sm"
           />
-          {isLoading && (
-            <div className="absolute right-3 top-1/2 -translate-y-1/2">
-              <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-            </div>
-          )}
         </div>
         {searchInput && (
           <div className="mt-2 text-sm text-gray-600">
@@ -289,7 +283,16 @@ export default function KelasPage() {
       </div>
 
       <div className="animate-fadeIn">
-        {classes.length === 0 && !isLoading ? (
+        {isLoading ? (
+          <div className="bg-white rounded-lg shadow-sm p-6 space-y-4">
+            {[...Array(5)].map((_, i) => (
+              <div
+                key={i}
+                className="h-10 bg-gray-200 rounded-md animate-pulse"
+              />
+            ))}
+          </div>
+        ) : classes.length === 0 ? (
           <div className="bg-white rounded-lg shadow-sm p-12 text-center">
             <div className="text-gray-400 mb-4">
               <Search className="w-16 h-16 mx-auto" />
@@ -317,15 +320,13 @@ export default function KelasPage() {
 
       {isOpen && editItem && (
         <div
-          className={`fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-center items-center z-50 transition-opacity duration-200 ${
-            isAnimating ? "opacity-100" : "opacity-0"
-          }`}
+          className={`fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-center items-center z-50 transition-opacity duration-200 ${isAnimating ? "opacity-100" : "opacity-0"
+            }`}
           onClick={closeModal}
         >
           <div
-            className={`bg-white p-6 rounded-xl shadow-xl w-full max-w-md transition-transform duration-200 ${
-              isAnimating ? "translate-y-0 opacity-100" : "-translate-y-4 opacity-0"
-            }`}
+            className={`bg-white p-6 rounded-xl shadow-xl w-full max-w-md transition-transform duration-200 ${isAnimating ? "translate-y-0 opacity-100" : "-translate-y-4 opacity-0"
+              }`}
             onClick={(e) => e.stopPropagation()}
           >
             <h2 className="text-2xl font-bold mb-6 text-gray-800">Edit Kelas</h2>

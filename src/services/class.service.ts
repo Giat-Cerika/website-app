@@ -1,4 +1,3 @@
-// services/class.service.ts
 import { classRepository } from '@/repositories';
 import { Class, CreateClassRequest } from '@/types/class.types';
 import { PaginationParams } from '@/types/common.types';

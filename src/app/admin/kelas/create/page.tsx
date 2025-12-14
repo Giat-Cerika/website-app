@@ -84,7 +84,7 @@ export default function CreateKelasPage() {
               className="mt-4 flex items-center justify-center gap-2"
             >
               <Save className="w-5 h-5" />
-              {loading ? "Menyimpan..." : "Simpan Materi"}
+              {loading ? "Menyimpan..." : "Simpan"}
             </Button>
           </form>
         </CardContent>

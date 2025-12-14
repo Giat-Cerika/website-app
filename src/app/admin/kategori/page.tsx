@@ -20,13 +20,13 @@ export default function KategoriPage() {
   const per_page = 10;
 
   useEffect(() => {
-    fetchCategories({ page, per_page, search: searchInput });
+    fetchCategories({ page, per_page });
   }, [page, fetchCategories]);
 
   useEffect(() => {
     const delaySearch = setTimeout(() => {
       setPage(1);
-      fetchCategories({ page: 1, per_page, search: searchInput });
+      fetchCategories({ page: 1, per_page });
     }, 500);
 
     return () => clearTimeout(delaySearch);
@@ -45,6 +45,10 @@ export default function KategoriPage() {
       setEditItem(null);
     }, 200);
   };
+
+  const filteredCategories = categories.filter((item) =>
+    item.name.toLowerCase().includes(searchInput.toLowerCase())
+  );
 
   const handleSaveEdit = async () => {
     if (!editItem) return;
@@ -85,7 +89,7 @@ export default function KategoriPage() {
       try {
         await deleteCategory(item.id);
         toastSuccess("Data kuis berhasil dihapus");
-        
+
         if (categories.length === 1 && page > 1) {
           setPage(page - 1);
         } else {
@@ -108,7 +112,7 @@ export default function KategoriPage() {
     const currentPage = pagination.current_page;
     const totalPages = pagination.total_pages;
     const pages = [];
-    
+
     const maxVisible = 10;
     let startPage = Math.max(1, currentPage - 2);
     let endPage = Math.min(totalPages, currentPage + 2);
@@ -157,11 +161,10 @@ export default function KategoriPage() {
               key={p}
               onClick={() => setPage(p)}
               disabled={isLoading}
-              className={`px-3 py-1.5 rounded-lg border transition-all text-sm font-medium min-w-[40px] ${
-                p === currentPage
-                  ? "bg-blue-600 text-white border-blue-600 shadow-md"
-                  : "border-gray-300 hover:bg-gray-100 text-gray-700"
-              } disabled:opacity-40`}
+              className={`px-3 py-1.5 rounded-lg border transition-all text-sm font-medium min-w-[40px] ${p === currentPage
+                ? "bg-blue-600 text-white border-blue-600 shadow-md"
+                : "border-gray-300 hover:bg-gray-100 text-gray-700"
+                } disabled:opacity-40`}
             >
               {p}
             </button>
@@ -248,7 +251,7 @@ export default function KategoriPage() {
       <div className="flex items-center justify-between mb-6 animate-slideInDown">
         <h1 className="text-3xl font-bold text-gray-800">Data Kategori</h1>
         <a
-          href="/admin/kuis/create"
+          href="/admin/kategori/create"
           className="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl flex items-center gap-2 hover:from-blue-700 hover:to-blue-800 transition shadow hover:shadow-lg active:scale-95 duration-300 font-medium"
         >
           <Plus className="w-5 h-5" /> Tambah Kategori
@@ -262,14 +265,13 @@ export default function KategoriPage() {
             type="text"
             placeholder="Cari Kategori Kuis"
             value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            className="w-26 text-gray-800 pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all bg-white shadow-sm"
+            onChange={(e) => {
+              setSearchInput(e.target.value);
+              setPage(1);
+            }}
+            className="w-26 text-gray-800 pl-10 pr-4 py-3 border border-gray-300 rounded-lg"
           />
-          {isLoading && (
-            <div className="absolute right-3 top-1/2 -translate-y-1/2">
-              <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-            </div>
-          )}
+
         </div>
         {searchInput && (
           <div className="mt-2 text-sm text-gray-600">
@@ -279,8 +281,6 @@ export default function KategoriPage() {
               </span>
             ) : (
               <span>
-                Ditemukan <span className="font-semibold text-gray-800">{pagination?.total_data || 0}</span> hasil
-                {searchInput && ` untuk "${searchInput}"`}
               </span>
             )}
           </div>
@@ -288,23 +288,32 @@ export default function KategoriPage() {
       </div>
 
       <div className="animate-fadeIn">
-        {categories.length === 0 && !isLoading ? (
+        {isLoading ? (
+          <div className="bg-white rounded-lg shadow-sm p-6 space-y-4">
+            {[...Array(5)].map((_, i) => (
+              <div
+                key={i}
+                className="h-10 bg-gray-200 rounded-md animate-pulse"
+              />
+            ))}
+          </div>
+        ) : categories.length === 0 ? (
           <div className="bg-white rounded-lg shadow-sm p-12 text-center">
             <div className="text-gray-400 mb-4">
               <Search className="w-16 h-16 mx-auto" />
             </div>
             <h3 className="text-lg font-semibold text-gray-700 mb-2">
-              {searchInput ? "Tidak ada hasil ditemukan" : "Belum ada data kuis"}
+              {searchInput ? "Tidak ada hasil ditemukan" : "Belum ada data kategori"}
             </h3>
             <p className="text-gray-500 text-sm">
               {searchInput
-                ? `Tidak ditemukan kuis dengan kata kunci "${searchInput}"`
+                ? `Tidak ditemukan kategori dengan kata kunci "${searchInput}"`
                 : "Klik tombol Tambah Kategori untuk membuat data baru"}
             </p>
           </div>
         ) : (
           <AutoTable
-            data={categories}
+            data={filteredCategories}
             fields={fields}
             onEdit={openEditModal}
             onDelete={handleDelete}
@@ -316,15 +325,13 @@ export default function KategoriPage() {
 
       {isOpen && editItem && (
         <div
-          className={`fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-center items-center z-50 transition-opacity duration-200 ${
-            isAnimating ? "opacity-100" : "opacity-0"
-          }`}
+          className={`fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-center items-center z-50 transition-opacity duration-200 ${isAnimating ? "opacity-100" : "opacity-0"
+            }`}
           onClick={closeModal}
         >
           <div
-            className={`bg-white p-6 rounded-xl shadow-xl w-full max-w-md transition-transform duration-200 ${
-              isAnimating ? "translate-y-0 opacity-100" : "-translate-y-4 opacity-0"
-            }`}
+            className={`bg-white p-6 rounded-xl shadow-xl w-full max-w-md transition-transform duration-200 ${isAnimating ? "translate-y-0 opacity-100" : "-translate-y-4 opacity-0"
+              }`}
             onClick={(e) => e.stopPropagation()}
           >
             <h2 className="text-2xl font-bold mb-6 text-gray-800">Edit Kategori</h2>
