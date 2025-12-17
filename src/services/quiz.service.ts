@@ -59,7 +59,6 @@ export class QuizService {
     id: string,
     payload: { question_order_mode: "random" | "sequential" }
   ): Promise<Quiz> {
-    // langsung diteruskan ke repository
     return await quizRepository.updateOrder(id, payload);
   }
 

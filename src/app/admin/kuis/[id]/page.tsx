@@ -9,6 +9,8 @@ import {
   Loader2,
   Lock,
   LockOpen,
+  Plus,
+  Eye,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -109,8 +111,7 @@ export default function QuizDetailPage() {
     if (selectedQuiz.question_order_mode === mode) return;
 
     setIsUpdatingOrderMode(true);
-    
-    // Show loading toast
+
     Swal.fire({
       title: "Mengubah Order Mode...",
       text: `Sedang mengubah ke mode ${mode === "random" ? "Random" : "Sequential"}`,
@@ -125,8 +126,7 @@ export default function QuizDetailPage() {
     try {
       await useQuizStore.getState().updateQuestionOrderMode(selectedQuiz.id, mode);
       await fetchQuizById(selectedQuiz.id);
-      
-      // Success notification
+
       Swal.fire({
         title: "Berhasil!",
         text: `Order mode berhasil diubah ke ${mode === "random" ? "Random" : "Sequential"}`,
@@ -143,6 +143,10 @@ export default function QuizDetailPage() {
     } finally {
       setIsUpdatingOrderMode(false);
     }
+  };
+
+  const handleAddQuestion = () => {
+    router.push(`/admin/kuis/${id}/add-question`);
   };
 
   if (isLoading) {
@@ -177,12 +181,21 @@ export default function QuizDetailPage() {
 
   return (
     <div className="max-w-5xl mx-auto p-6 space-y-6">
-      <Button
-        onClick={() => router.back()}
-        className="flex items-center gap-2"
-      >
-        <ArrowLeft className="w-4 h-4" /> Kembali
-      </Button>
+      <div className="flex items-center justify-between">
+        <Button
+          onClick={() => router.back()}
+          className="flex items-center gap-2"
+        >
+          <ArrowLeft className="w-4 h-4" /> Kembali
+        </Button>
+
+        <Button
+          onClick={handleAddQuestion}
+          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
+        >
+          <Plus className="w-4 h-4" /> Tambah Soal
+        </Button>
+      </div>
 
       <Card className="shadow-lg rounded-2xl border-0">
         <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-t-2xl space-y-4">
@@ -216,9 +229,8 @@ export default function QuizDetailPage() {
 
           <div className="flex flex-wrap items-center gap-3 mt-2">
             <span
-              className={`px-4 py-1.5 rounded-full text-sm font-semibold ${
-                STATUS_MAP[selectedQuiz.status]?.color
-              }`}
+              className={`px-4 py-1.5 rounded-full text-sm font-semibold ${STATUS_MAP[selectedQuiz.status]?.color
+                }`}
             >
               {getStatusLabel(selectedQuiz.status)}
             </span>
@@ -269,10 +281,19 @@ export default function QuizDetailPage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
-            <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 rounded-xl p-6 shadow-sm">
-              <p className="text-xs text-blue-800 dark:text-blue-300 font-semibold uppercase tracking-wide mb-2">
-                Jumlah Soal
-              </p>
+            <div
+              onClick={() => router.push(`/admin/kuis/${id}/questions`)}
+              className="group cursor-pointer bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 rounded-xl p-6 shadow-sm"
+            >
+              <div className="flex items-center justify-between gap-1 text-blue-700 dark:text-blue-300 text-sm">
+                <p className="text-xs text-blue-800 dark:text-blue-300 font-semibold uppercase tracking-wide mb-2">
+                  Jumlah Soal
+                </p>
+                <div className="flex items-center gap-2">
+                  <Eye className="w-4 h-4" />
+                  Lihat
+                </div>
+              </div>
               <p className="text-3xl font-bold text-blue-900 dark:text-blue-100">
                 {selectedQuiz.amount_questions ?? "-"}
               </p>
