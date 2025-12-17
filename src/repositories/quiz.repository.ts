@@ -15,7 +15,7 @@ export class QuizRepository {
   }
 
   async getById(id: string): Promise<Quiz> {
-    return (await axiosInstance.get(`${this.endpoint}/${id}`)).data;
+    return (await axiosInstance.get(`${this.endpoint}/${id}`)).data.data;
   }
 
   async update(id: string, data: Partial<CreateQuizRequest>): Promise<Quiz> {
@@ -29,4 +29,28 @@ export class QuizRepository {
   async incrementViewCount(id: string): Promise<void> {
     return (await axiosInstance.post(`${this.endpoint}/${id}/view`)).data;
   }
+
+  async updateStatus(id: string, status: number): Promise<Quiz> {
+    const payload = { status };
+
+    const response = await axiosInstance.put(
+      `${this.endpoint}/${id}/update-status`,
+      payload
+    );
+
+
+    return response.data;
+  }
+
+  async updateOrder(
+    id: string,
+    payload: { question_order_mode: "random" | "sequential" }
+  ): Promise<Quiz> {
+    const response = await axiosInstance.put(
+      `${this.endpoint}/${id}/update-question-order-mode`,
+      payload
+    );
+    return response.data;
+  }
+
 }

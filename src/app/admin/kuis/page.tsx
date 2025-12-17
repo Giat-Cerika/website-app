@@ -52,7 +52,6 @@ export default function KuisPage() {
     router.push(`/admin/kuis/${item.id}`);
   };
 
-
   const handleSaveEdit = async () => {
     if (!editItem) return;
 
@@ -67,7 +66,7 @@ export default function KuisPage() {
 
     if (result.isConfirmed) {
       try {
-        await updateQuiz(editItem.id, editItem);
+        await updateQuiz(editItem.id, { title: editItem.title, code: editItem.code });
         toastSuccess("Data kuis berhasil diperbarui");
         fetchQuizes({ page, per_page, search: searchInput });
         closeModal();
@@ -80,7 +79,7 @@ export default function KuisPage() {
   const handleDelete = async (item: any) => {
     const result = await Swal.fire({
       title: "Hapus kuis?",
-      text: `Yakin menghapus kuis ${item.name_class}?`,
+      text: `Yakin menghapus kuis ${item.title}?`,
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#d33",
@@ -104,10 +103,23 @@ export default function KuisPage() {
     }
   };
 
+  const getStatusText = (status: number) => {
+    switch (status) {
+      case 0:
+        return "Draft";
+      case 1:
+        return "Open";
+      case 2:
+        return "Close";
+      default:
+        return "Unknown";
+    }
+  };
+
   const fields = [
     { key: "title", label: "Judul Kuis" },
     { key: "quiz_type", label: "Tipe" },
-    { key: "status", label: "Status" },
+    { key: "status", label: "Status" }
   ];
 
   const renderPagination = () => {
@@ -166,8 +178,8 @@ export default function KuisPage() {
               onClick={() => setPage(p)}
               disabled={isLoading}
               className={`px-3 py-1.5 rounded-lg border transition-all text-sm font-medium min-w-[40px] ${p === currentPage
-                  ? "bg-blue-600 text-white border-blue-600 shadow-md"
-                  : "border-gray-300 hover:bg-gray-100 text-gray-700"
+                ? "bg-blue-600 text-white border-blue-600 shadow-md"
+                : "border-gray-300 hover:bg-gray-100 text-gray-700"
                 } disabled:opacity-40`}
             >
               {p}
@@ -280,8 +292,7 @@ export default function KuisPage() {
                 <span className="loading-pulse">Mencari...</span>
               </span>
             ) : (
-              <span>
-              </span>
+              <span></span>
             )}
           </div>
         )}
@@ -313,12 +324,36 @@ export default function KuisPage() {
           </div>
         ) : (
           <AutoTable
-            data={quizes}
+            data={quizes.map((q) => ({
+              ...q,
+              status: getStatusText(q.status),
+            }))}
             fields={fields}
             onView={handleView}
-            onEdit={openEditModal}
-            onDelete={handleDelete}
+            onEdit={(item) =>
+              item.status === "Open"
+                ? Swal.fire({
+                  title: "Info",
+                  html: `<p>Kuis dengan status <strong>"${item.status}"</strong> tidak bisa diedit</p>`,
+                  icon: "info",
+                })
+                : openEditModal(
+                  quizes.find((q) => q.id === item.id) // ambil data asli
+                )
+            }
+            onDelete={(item) =>
+              item.status === "Open"
+                ? Swal.fire({
+                  title: "Info",
+                  html: `<p>Kuis dengan status <strong>"${item.status}"</strong> tidak bisa dihapus</p>`,
+                  icon: "info",
+                })
+                : handleDelete(
+                  quizes.find((q) => q.id === item.id)
+                )
+            }
           />
+
         )}
       </div>
 
@@ -340,43 +375,29 @@ export default function KuisPage() {
             <div className="flex flex-col gap-4">
               <div>
                 <label className="block font-medium text-gray-700 mb-2">
-                  Nama Kuis <span className="text-red-500">*</span>
+                  Judul Kuis <span className="text-red-500">*</span>
                 </label>
                 <input
-                  className="w-full p-3 text-gray-800 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                  value={editItem.name_class}
+                  className="w-full p-3 text-gray-800 border border-gray-300 rounded-lg"
+                  value={editItem.title}
                   onChange={(e) =>
-                    setEditItem({ ...editItem, name_class: e.target.value })
+                    setEditItem({ ...editItem, title: e.target.value })
                   }
-                  placeholder="Contoh: Kuis A"
+                  placeholder="Contoh: Kuis Matematika"
                 />
               </div>
 
               <div>
                 <label className="block font-medium text-gray-700 mb-2">
-                  Grade <span className="text-red-500">*</span>
+                  Kode Kuis <span className="text-red-500">*</span>
                 </label>
                 <input
-                  className="w-full text-gray-800 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                  value={editItem.grade}
+                  className="w-full p-3 text-gray-800 border border-gray-300 rounded-lg"
+                  value={editItem.code}
                   onChange={(e) =>
-                    setEditItem({ ...editItem, grade: e.target.value })
+                    setEditItem({ ...editItem, code: e.target.value })
                   }
-                  placeholder="Contoh: 1, 2, 3"
-                />
-              </div>
-
-              <div>
-                <label className="block font-medium text-gray-700 mb-2">
-                  Wali Kuis <span className="text-red-500">*</span>
-                </label>
-                <input
-                  className="w-full text-gray-800 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                  value={editItem.teacher}
-                  onChange={(e) =>
-                    setEditItem({ ...editItem, teacher: e.target.value })
-                  }
-                  placeholder="Nama wali kuis"
+                  placeholder="QZ-001"
                 />
               </div>
             </div>

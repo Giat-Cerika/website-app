@@ -50,6 +50,19 @@ export class QuizService {
       console.error('Failed to increment view count:', error);
     }
   }
+  
+  async updateQuizStatus(id: string, status: number): Promise<Quiz> {
+    return await quizRepository.updateStatus(id, status);
+  }
+
+  async updateQuizOrder(
+    id: string,
+    payload: { question_order_mode: "random" | "sequential" }
+  ): Promise<Quiz> {
+    // langsung diteruskan ke repository
+    return await quizRepository.updateOrder(id, payload);
+  }
+
 }
 
 export const quizService = new QuizService();

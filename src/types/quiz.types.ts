@@ -7,9 +7,10 @@ export interface Quiz {
   description: string;
   start_date: string;
   end_date: string;
-  status: string;
+  status: number;
   amount_questions: string;
   amount_assigned: string;
+  question_order_mode: string;
   created_at: string;
   updated_at: string;
 }
