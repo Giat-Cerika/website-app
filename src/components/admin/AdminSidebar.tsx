@@ -28,10 +28,9 @@ export default function Sidebar({ isOpen }: SidebarProps) {
     { icon: FileText, label: "Kuis", path: "/admin/kuis" },
     { icon: Building2, label: "Kelas", path: "/admin/kelas" },
     { icon: Newspaper, label: "Kategori Kuis", path: "/admin/kategori" },
-    { icon: TrendingUp, label: "Prediksi Karies", path: "/admin/prediksi" },
     { icon: BookOpen, label: "Materi", path: "/admin/materi" },
     { icon: Video, label: "Video Pembelajaran", path: "/admin/video" },
-    { icon: Video, label: "Traffic Light Assesment", path: "/admin/tlm"},
+    { icon: TrendingUp, label: "Traffic Light Assesment", path: "/admin/tlm"},
     { icon: User, label: "Profile", path: "/admin/profile" },
   ];
 
