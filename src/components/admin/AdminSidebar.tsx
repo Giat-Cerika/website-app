@@ -31,6 +31,7 @@ export default function Sidebar({ isOpen }: SidebarProps) {
     { icon: TrendingUp, label: "Prediksi Karies", path: "/admin/prediksi" },
     { icon: BookOpen, label: "Materi", path: "/admin/materi" },
     { icon: Video, label: "Video Pembelajaran", path: "/admin/video" },
+    { icon: Video, label: "Traffic Light Assesment", path: "/admin/tlm"},
     { icon: User, label: "Profile", path: "/admin/profile" },
   ];
 
