@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { Save, AlertCircle, Activity, Droplet, Apple, Shield, AlertTriangle } from "lucide-react";
 import Swal from "sweetalert2";
+import { predictionService } from "@/services/predictions.service";
 
 export default function CariesRiskForm() {
   const token = sessionStorage.getItem("token");
@@ -210,11 +211,7 @@ export default function CariesRiskForm() {
         caries_risk: detectionResult.data,
       };
 
-      await fetch("http://localhost:8080/api/v1/prediction/save", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify(payload),
-      });
+      await predictionService.save(payload);
 
       Swal.fire({
         icon: "success",
