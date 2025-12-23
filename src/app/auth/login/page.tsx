@@ -17,7 +17,7 @@ export default function LoginPage() {
     setIsLoading(true);
 
     const response = await fetch(
-      "http://localhost:8080/api/v1/admin/login",
+      "https://service-app-production-f175.up.railway.app/api/v1/admin/login",
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },

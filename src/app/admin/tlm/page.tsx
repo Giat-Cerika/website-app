@@ -215,7 +215,7 @@ export default function CariesRiskForm() {
         caries_risk: detectionResult.data,
       };
 
-      await fetch("http://localhost:8080/api/v1/prediction/save", {
+      await fetch("https://service-app-production-f175.up.railway.app/api/v1/prediction/save", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify(payload),
