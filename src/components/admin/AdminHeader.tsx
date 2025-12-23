@@ -19,7 +19,7 @@ export default function Header({ isSidebarOpen, onToggleSidebar }: HeaderProps) 
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-    router.push("/login");
+    router.push("/auth/login");
   };
 
   const handleSearch = (e: React.FormEvent) => {

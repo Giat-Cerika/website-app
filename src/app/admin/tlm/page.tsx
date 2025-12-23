@@ -1,9 +1,13 @@
 "use client";
 import { useState } from "react";
 import { Save, AlertCircle, Activity, Droplet, Apple, Shield, AlertTriangle } from "lucide-react";
+import Swal from "sweetalert2";
 
 export default function CariesRiskForm() {
+  const token = sessionStorage.getItem("token");
   const [formData, setFormData] = useState({
+    patient_name: "",
+    age: "",
     attitude: 1,
     diseaseStatus: 1,
     saliva_type: "resting",
@@ -42,14 +46,9 @@ export default function CariesRiskForm() {
   const [detectionResult, setDetectionResult] = useState<any>(null);
 
   const attitudeOptions = [
-    { label: "YES = A", value: 1 },
-    { label: "MAYBE = B", value: 2 },
-    { label: "NO = C", value: 3 },
-  ];
-  const diseaseOptions = [
-    { label: "1 = No current disease", value: 1 },
-    { label: "2 = Need for repair, maintenance", value: 2 },
-    { label: "3 = Active disease", value: 3 },
+    { label: "A = No current disease", value: 1 },
+    { label: "B = Need for repair, maintenance", value: 2 },
+    { label: "C = Active disease", value: 3 },
   ];
   const salivaOptions: { [key: string]: { label: string; value: number }[] } = {
     hydration: [
@@ -112,16 +111,6 @@ export default function CariesRiskForm() {
   const getActiveClass = (isActive: boolean) =>
     isActive ? "ring-4 ring-blue-600 ring-offset-2 scale-105 shadow-lg" : "hover:scale-102";
 
-  const getSalivaScore = () => {
-    if (formData.saliva_type === "resting") {
-      const { hydration, viscosity, ph } = formData.saliva;
-      return Math.round((hydration + viscosity + ph) / 3);
-    }
-    const { quantity, ph, buffering } = formData.saliva;
-    return Math.round((quantity + ph + buffering) / 3);
-  };
-
-  const getPlaqueScore = () => formData.plaque[formData.plaque_type as keyof typeof formData.plaque];
   const getBacteriaScore = () => formData.bacteria;
   const getFluorideScore = () => {
     const count = Object.values(formData.fluoride).filter(Boolean).length;
@@ -177,8 +166,8 @@ export default function CariesRiskForm() {
     setIsDetecting(true);
     setDetectionResult(null);
     const payload = {
-      "A&S": formData.attitude,
-      "Riwayat Karies": formData.diseaseStatus,
+      "attitude_and_status": formData.attitude,
+      "caries_history": getBacteriaScore(),
       "Saliva": getSalivaPayload(),
       "Plaque": getPlaquePayload(),
       "Diet": {
@@ -186,8 +175,9 @@ export default function CariesRiskForm() {
         Acid: formData.diet.acid,
       },
       "Fluoride": getFluorideScore(),
-      "MF": getModifyingFactorsScore(),
+      "modifying_factor": getModifyingFactorsScore(),
     };
+
     try {
       const res = await fetch("http://127.0.0.1:5000/predict", {
         method: "POST",
@@ -208,23 +198,35 @@ export default function CariesRiskForm() {
     if (!detectionResult) return;
     setIsSaving(true);
     try {
-      const res = await fetch("http://localhost:8080/api/caries-assessment", {
+      const payload = {
+        patient_name: formData.patient_name,
+        age: Number(formData.age),
+        result: detectionResult.result,
+        score: detectionResult.score,
+        color: detectionResult.color,
+        confidence: detectionResult.confidence,
+        confidence_detail: detectionResult.confidence_detail,
+        description: detectionResult.description,
+        caries_risk: detectionResult.data,
+      };
+
+      await fetch("http://localhost:8080/api/v1/prediction/save", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          input: {
-            saliva: getSalivaScore(),
-            plaque: getPlaqueScore(),
-            fluoride: getFluorideScore(),
-            mf: getModifyingFactorsScore(),
-          },
-          result: detectionResult,
-        }),
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify(payload),
       });
-      if (!res.ok) throw new Error("Gagal simpan");
-      alert("Berhasil disimpan");
+
+      Swal.fire({
+        icon: "success",
+        title: "Berhasil",
+        text: "Data prediksi berhasil disimpan",
+      });
     } catch (err: any) {
-      alert(err.message);
+      Swal.fire({
+        icon: "error",
+        title: "Gagal Menyimpan",
+        text: err.message || "Server error",
+      });
     } finally {
       setIsSaving(false);
     }
@@ -237,16 +239,59 @@ export default function CariesRiskForm() {
           {/* Header */}
           <div className="mb-8 text-center">
             <h1 className="text-4xl font-bold text-gray-800 mb-3">
-              Caries Risk Assessment
+              Traffic Light Assesment
             </h1>
             <p className="text-gray-600">Complete the form to evaluate dental caries risk</p>
           </div>
+
+          {/* Patient Information */}
+          <section className="mb-8 p-6 bg-gradient-to-r from-slate-50 to-gray-50 rounded-2xl border-2 border-gray-200">
+            <div className="flex items-center gap-3 mb-4">
+              <AlertCircle className="w-6 h-6 text-gray-600" />
+              <h2 className="text-xl font-bold text-gray-800">Patient Information</h2>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Patient Name */}
+              <div>
+                <label className="block mb-2 font-semibold text-gray-700">
+                  Patient Name
+                </label>
+                <input
+                  type="text"
+                  value={formData.patient_name}
+                  onChange={(e) =>
+                    setFormData({ ...formData, patient_name: e.target.value })
+                  }
+                  placeholder="Enter patient name"
+                  className="w-full p-4 text-gray-800 rounded-xl border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                />
+              </div>
+
+              {/* Age */}
+              <div>
+                <label className="block mb-2 font-semibold text-gray-700">
+                  Age
+                </label>
+                <input
+                  type="number"
+                  min={1}
+                  value={formData.age}
+                  onChange={(e) =>
+                    setFormData({ ...formData, age: e.target.value })
+                  }
+                  placeholder="Enter age"
+                  className="w-full p-4 text-gray-800 rounded-xl border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                />
+              </div>
+            </div>
+          </section>
 
           {/* Attitude */}
           <section className="mb-8 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl border-2 border-blue-100">
             <div className="flex items-center gap-3 mb-4">
               <Activity className="w-6 h-6 text-blue-600" />
-              <h2 className="text-xl font-bold text-gray-800">Attitude (Patient Self Assessment)</h2>
+              <h2 className="text-xl font-bold text-gray-800">Attitude & Disease Status</h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               {attitudeOptions.map((opt) => (
@@ -254,25 +299,6 @@ export default function CariesRiskForm() {
                   key={opt.value}
                   onClick={() => setFormData({ ...formData, attitude: opt.value })}
                   className={`p-4 rounded-xl font-semibold text-white transition-all ${getRiskColor(opt.value)} ${getActiveClass(formData.attitude === opt.value)}`}
-                >
-                  {opt.label}
-                </button>
-              ))}
-            </div>
-          </section>
-
-          {/* Disease Status */}
-          <section className="mb-8 p-6 bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl border-2 border-purple-100">
-            <div className="flex items-center gap-3 mb-4">
-              <AlertCircle className="w-6 h-6 text-purple-600" />
-              <h2 className="text-xl font-bold text-gray-800">Disease Status (Clinical Assessment)</h2>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              {diseaseOptions.map((opt) => (
-                <button
-                  key={opt.value}
-                  onClick={() => setFormData({ ...formData, diseaseStatus: opt.value })}
-                  className={`p-4 rounded-xl font-semibold text-white transition-all ${getRiskColor(opt.value)} ${getActiveClass(formData.diseaseStatus === opt.value)}`}
                 >
                   {opt.label}
                 </button>
@@ -540,12 +566,12 @@ export default function CariesRiskForm() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 {/* Risk Level */}
-                <div className={`p-6 rounded-2xl shadow-lg border-3 ${detectionResult.result === "Tinggi" ? "bg-gradient-to-br from-red-500 to-red-600 border-red-700" :
-                  detectionResult.result === "Sedang" ? "bg-gradient-to-br from-yellow-500 to-yellow-600 border-yellow-700" :
+                <div className={`p-6 rounded-2xl shadow-lg border-3 ${detectionResult.result === "high" ? "bg-gradient-to-br from-red-500 to-red-600 border-red-700" :
+                  detectionResult.result === "medium" ? "bg-gradient-to-br from-yellow-500 to-yellow-600 border-yellow-700" :
                     "bg-gradient-to-br from-green-500 to-green-600 border-green-700"
                   }`}>
                   <h3 className="text-lg font-semibold text-white/90 mb-2">Risk Level</h3>
-                  <div className="text-5xl font-black text-white mb-2">{detectionResult.result}</div>
+                  <div className="text-5xl font-black text-white mb-2 capitalize">{detectionResult.result}</div>
                   <div className="text-white/90 font-semibold">Score: {detectionResult.score}</div>
                 </div>
 
@@ -555,7 +581,7 @@ export default function CariesRiskForm() {
                   <div className="text-5xl font-black text-white mb-4">{detectionResult.confidence}</div>
                   <div className="space-y-2">
                     {Object.entries(detectionResult.confidence_detail).map(([key, value]: [string, any]) => (
-                      <div key={key} className="flex justify-between items-center bg-white/20 p-2 rounded-lg">
+                      <div key={key} className="flex justify-between items-center bg-white/20 p-2 rounded-lg capitalize">
                         <span className="font-semibold text-white">{key}:</span>
                         <span className="font-bold text-white">{value.toFixed(1)}%</span>
                       </div>
