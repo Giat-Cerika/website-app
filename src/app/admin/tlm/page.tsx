@@ -1,11 +1,10 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Save, AlertCircle, Activity, Droplet, Apple, Shield, AlertTriangle } from "lucide-react";
 import Swal from "sweetalert2";
-import { predictionService } from "@/services/predictions.service";
 
 export default function CariesRiskForm() {
-  const token = sessionStorage.getItem("token");
+  const [token, setToken] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     patient_name: "",
     age: "",
@@ -180,7 +179,7 @@ export default function CariesRiskForm() {
     };
 
     try {
-      const res = await fetch("https://web-production-b2442.up.railway.app/predict", {
+      const res = await fetch("http://127.0.0.1:5000/predict", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -194,6 +193,11 @@ export default function CariesRiskForm() {
       setIsDetecting(false);
     }
   };
+
+  useEffect(() => {
+    const t = sessionStorage.getItem("token");
+    setToken(t);
+  }, []);
 
   const handleSave = async () => {
     if (!detectionResult) return;
@@ -211,7 +215,11 @@ export default function CariesRiskForm() {
         caries_risk: detectionResult.data,
       };
 
-      await predictionService.save(payload);
+      await fetch("http://localhost:8080/api/v1/prediction/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify(payload),
+      });
 
       Swal.fire({
         icon: "success",
