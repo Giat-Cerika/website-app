@@ -16,6 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useQuizStore } from "@/stores/useQuizStore";
 import Swal from "sweetalert2";
+import { Infinity as InfinityIcon } from "lucide-react";
 
 const STATUS_MAP: Record<number, { label: string; color: string }> = {
   0: { label: "Draft", color: "bg-gray-200 text-gray-700" },
@@ -43,12 +44,37 @@ export default function QuizDetailPage() {
     if (id) fetchQuizById(id);
   }, [id, fetchQuizById]);
 
-  const formatDate = (date: string) =>
+  const formatDateTime = (date: string) =>
+    new Date(date).toLocaleString("id-ID", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
+  const formatDateOnly = (date: string) =>
     new Date(date).toLocaleDateString("id-ID", {
       day: "numeric",
       month: "long",
       year: "numeric",
     });
+
+  const isInfinitySchedule = (start: string, end: string) => {
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+
+    const sameDay =
+      startDate.toDateString() === endDate.toDateString();
+
+    const startIsMidnight =
+      startDate.getHours() === 0 && startDate.getMinutes() === 0;
+
+    const endIsMidnight =
+      endDate.getHours() === 0 && endDate.getMinutes() === 0;
+
+    return sameDay && startIsMidnight && endIsMidnight;
+  };
 
   const handleChangeStatus = async (newStatus: number) => {
     if (!selectedQuiz) return;
@@ -257,7 +283,20 @@ export default function QuizDetailPage() {
 
             <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg shadow-sm">
               <Calendar className="w-4 h-4 text-blue-600" />
-              {formatDate(selectedQuiz.start_date)} – {formatDate(selectedQuiz.end_date)}
+              {isInfinitySchedule(
+                selectedQuiz.start_date,
+                selectedQuiz.end_date
+              ) ? (
+                <span className="flex items-center gap-1 font-semibold text-blue-700">
+                  {formatDateOnly(selectedQuiz.start_date)}
+                  <InfinityIcon className="w-4 h-4" />
+                </span>
+              ) : (
+                <span>
+                  {formatDateTime(selectedQuiz.start_date)} –{" "}
+                  {formatDateTime(selectedQuiz.end_date)}
+                </span>
+              )}
             </div>
           </div>
         </CardHeader>

@@ -6,7 +6,6 @@ import { User, Lock, Eye, EyeOff } from "lucide-react";
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 const LOGIN_ENDPOINT = "/admin/login";
 
-
 export default function LoginPage() {
   const router = useRouter();
   const [username, setUsername] = useState("");

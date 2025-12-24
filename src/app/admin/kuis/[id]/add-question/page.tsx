@@ -167,7 +167,7 @@ export default function AddQuestionPage() {
                 showConfirmButton: false,
             });
 
-            router.push(`/admin/kuis/${id}`);
+            router.push(`/admin/kuis/${id}/questions`);
         } catch (error: any) {
 
             Swal.fire({
@@ -304,6 +304,8 @@ export default function AddQuestionPage() {
                                                     <Input
                                                         id={`score_value_${index}`}
                                                         type="number"
+                                                        min={0}
+                                                        step={1}
                                                         placeholder="0"
                                                         value={answer.score_value}
                                                         onChange={(e) =>

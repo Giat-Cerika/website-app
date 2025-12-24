@@ -40,12 +40,14 @@ export default function QuestionListPage() {
   const [isUpdating, setIsUpdating] = useState(false);
   const [updateFormData, setUpdateFormData] = useState({
     question_text: "",
-    question_image: "",
     answers: [] as Array<{
+      answer_id: string;
       answer_text: string;
       score_value: number;
     }>
   });
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [existingImageUrl, setExistingImageUrl] = useState<string>("");
 
   useEffect(() => {
     if (id) fetchQuestionsByQuizId(String(id));
@@ -106,12 +108,14 @@ export default function QuestionListPage() {
       if (result.status_code === 200) {
         setUpdateFormData({
           question_text: result.data.question_text || "",
-          question_image: result.data.question_image || "",
           answers: result.data.answers?.map((ans: any) => ({
+            answer_id: ans.answer_id,
             answer_text: ans.answer_text,
             score_value: ans.score_value
           })) || []
         });
+        setExistingImageUrl(result.data.question_image || "");
+        setImageFile(null);
         setSelectedQuestion(result.data);
       } else {
         throw new Error(result.message || "Gagal memuat detail soal");
@@ -130,8 +134,6 @@ export default function QuestionListPage() {
   };
 
   const handleUpdateQuestion = async () => {
-    console.log("SUBMIT UPDATE FORM:", updateFormData);
-    if (!selectedQuestion) return;
 
     // Validasi
     if (!updateFormData.question_text.trim()) {
@@ -170,15 +172,14 @@ export default function QuestionListPage() {
       const formData = new FormData();
       formData.append("question_text", updateFormData.question_text);
 
-      if (updateFormData.question_image) {
-        formData.append("question_image", updateFormData.question_image);
-      }
-
-      // Tambahkan answers sebagai JSON string atau individual fields
       formData.append("answers", JSON.stringify(updateFormData.answers));
 
+      if (imageFile) {
+        formData.append("question_image", imageFile);
+      }
+
       const response = await fetch(
-        `${API_BASE_URL}${ENDPOINT}/${selectedQuestion.question_id}/edit`,
+        `${API_BASE_URL}${ENDPOINT}/${selectedQuestion.id}/edit`,
         {
           method: "PUT",
           headers: {
@@ -186,7 +187,7 @@ export default function QuestionListPage() {
           },
           body: formData,
         }
-      );
+      ).then(res => res.json());;
 
       const result = await response.json();
 
@@ -199,7 +200,7 @@ export default function QuestionListPage() {
           showConfirmButton: false,
         });
         setIsUpdateModalOpen(false);
-        fetchQuestionsByQuizId(String(id));
+        fetchQuestionsByQuizId(String(id)); 
       } else {
         throw new Error(result.message || "Gagal memperbarui soal");
       }
@@ -232,9 +233,10 @@ export default function QuestionListPage() {
   const handleCloseUpdateModal = () => {
     setIsUpdateModalOpen(false);
     setSelectedQuestion(null);
+    setImageFile(null);
+    setExistingImageUrl("");
     setUpdateFormData({
       question_text: "",
-      question_image: "",
       answers: []
     });
   };
@@ -388,7 +390,7 @@ export default function QuestionListPage() {
                     Gambar Soal
                   </p>
                   <img
-                    src={selectedQuestion.question_image}
+                    src={`${selectedQuestion.question_image}?t=${Date.now()}`}
                     alt="Question"
                     className="w-full max-w-md rounded-lg border shadow-sm"
                   />
@@ -402,6 +404,7 @@ export default function QuestionListPage() {
                 <div className="space-y-3">
                   {selectedQuestion.answers?.map((answer: any, idx: number) => (
                     <div
+                      key={answer.answer_id}
                       className={`p-4 rounded-lg border-2 transition text-gray-800 ${answer.score_value > 0
                           ? "bg-green-50 border-green-500"
                           : "bg-gray-50 border-gray-300"
@@ -465,7 +468,7 @@ export default function QuestionListPage() {
             <div className="space-y-6">
               {/* Question Text */}
               <div>
-                <p className="text-sm text-muted-foreground mb-2">Pertanyaan </p>
+                <p className="text-sm text-muted-foreground mb-2">Pertanyaan</p>
                 <Textarea
                   id="question_text"
                   value={updateFormData.question_text}
@@ -475,6 +478,7 @@ export default function QuestionListPage() {
                       question_text: e.target.value,
                     })
                   }
+                  placeholder="Masukkan pertanyaan..."
                   rows={4}
                   className="mt-2 text-gray-800"
                 />
@@ -486,13 +490,11 @@ export default function QuestionListPage() {
                 <Input
                   id="question_image"
                   type="file"
-                  value={updateFormData.question_image}
-                  onChange={(e) =>
-                    setUpdateFormData({
-                      ...updateFormData,
-                      question_image: e.target.value,
-                    })
-                  }
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0] || null;
+                    setImageFile(file);
+                  }}
                   className="mt-2 text-gray-800"
                 />
               </div>
@@ -503,7 +505,8 @@ export default function QuestionListPage() {
                 <div className="space-y-4">
                   {updateFormData.answers.map((answer, index) => (
                     <div
-                      className="border rounded-lg p-4 space-y-3 text-white"
+                      key={answer.answer_id}
+                      className="border rounded-lg p-4 space-y-3"
                     >
                       <div className="flex items-center gap-2">
                         <span className="font-semibold text-lg">
