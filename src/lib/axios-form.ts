@@ -1,9 +1,7 @@
 // lib/axios-form.ts
 import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from "axios";
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL ||
-  "https://service-app-production-a205.up.railway.app/api/v1";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL 
 
 // Axios khusus form-data
 const axiosForm: AxiosInstance = axios.create({

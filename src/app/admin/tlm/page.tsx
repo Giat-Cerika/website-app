@@ -1,13 +1,16 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Save, AlertCircle, Activity, Droplet, Apple, Shield, AlertTriangle } from "lucide-react";
+import { Save, AlertCircle, Activity, Droplet, Apple, Shield, AlertTriangle, Calendar } from "lucide-react";
 import Swal from "sweetalert2";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+const PREDICTION_SAVE_ENDPOINT = "/prediction/save";
 
 export default function CariesRiskForm() {
   const [token, setToken] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     patient_name: "",
     age: "",
+    date_of_evaluation: "",
     attitude: 1,
     diseaseStatus: 1,
     saliva_type: "resting",
@@ -161,6 +164,11 @@ export default function CariesRiskForm() {
       : { Ph: formData.plaque.ph };
   };
 
+  const formatDateTimeForAPI = (dateString: string) => {
+    if (!dateString) return new Date().toISOString();
+    const date = new Date(dateString);
+    return date.toISOString();
+  };
 
   const handleDetect = async () => {
     setIsDetecting(true);
@@ -206,6 +214,7 @@ export default function CariesRiskForm() {
       const payload = {
         patient_name: formData.patient_name,
         age: Number(formData.age),
+        date_of_evaluation: formatDateTimeForAPI(formData.date_of_evaluation),
         result: detectionResult.result,
         score: detectionResult.score,
         color: detectionResult.color,
@@ -215,7 +224,7 @@ export default function CariesRiskForm() {
         caries_risk: detectionResult.data,
       };
 
-      await fetch("https://service-app-production-f175.up.railway.app/api/v1/prediction/save", {
+      await fetch(`${API_BASE_URL}${PREDICTION_SAVE_ENDPOINT}`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify(payload),
@@ -288,6 +297,24 @@ export default function CariesRiskForm() {
                   placeholder="Enter age"
                   className="w-full p-4 text-gray-800 rounded-xl border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
                 />
+              </div>
+
+              {/* Date of Evaluation */}
+              <div>
+                <label className="block mb-2 font-semibold text-gray-700">
+                  Date of Evaluation
+                </label>
+                <div className="relative">
+                  <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                  <input
+                    type="date"
+                    value={formData.date_of_evaluation}
+                    onChange={(e) =>
+                      setFormData({ ...formData, date_of_evaluation: e.target.value })
+                    }
+                    className="w-full p-4 pl-12 text-gray-800 rounded-xl border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                  />
+                </div>
               </div>
             </div>
           </section>
@@ -421,7 +448,7 @@ export default function CariesRiskForm() {
           {/* Bacteria */}
           <section className="mb-8 p-6 bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl border-2 border-green-100">
             <div className="flex items-center gap-3 mb-4">
-              <h2 className="text-xl font-bold text-gray-800">Bacteria (S. Mutans Count)</h2>
+              <h2 className="text-xl font-bold text-gray-800">Caries History</h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {bacteriaOptions.map((opt) => (

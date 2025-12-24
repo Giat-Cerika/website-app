@@ -21,12 +21,12 @@ export default function ProfilePage() {
       try {
         const token = sessionStorage.getItem("token");
         if (!token) {
-          //   Swal.fire("Error", "Anda belum login!", "error");
+            // Swal.fire("Error", "Anda belum login!", "error");
           return;
         }
 
         const res = await fetch(
-          `https://service-app-production-a205.up.railway.app/api/v1/admin/me`,
+          `https://service-app-production-f175.up.railway.app/api/v1/admin/me`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
