@@ -76,7 +76,7 @@ export default function DashboardPage() {
     <>
       {/* Welcome Section */}
       <div className="mb-8">
-        <h2 className="text-3xl font-bold text-gray-800 mb-2">Dashboard,</h2>
+        <h2 className="text-3xl font-bold text-gray-800 mb-2">Dashboard</h2>
         <p className="text-gray-600">
           Selamat datang di sistem informasi GIAT CERIKA
         </p>

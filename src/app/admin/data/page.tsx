@@ -1,14 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Search, ChevronLeft, ChevronRight, Eye, X, Activity, User, Calendar, Target, TrendingUp } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, X, Activity, User, Calendar, Target, TrendingUp } from "lucide-react";
 import AutoTable from "@/components/ui/table";
 import { usePredictionStore } from "@/stores/usePredictionStore";
 import { toastSuccess, toastError } from "@/lib/toast";
 import Swal from "sweetalert2";
 
 export default function PredictionsPage() {
-    const { predictions, selectedPrediction, isLoading, fetchPredictions, fetchPredictionById, deletePrediction, pagination } =
+    const { predictions, selectedPrediction, isLoading, fetchPredictions, deletePrediction, pagination } =
         usePredictionStore();
 
     const [isModalOpen, setIsModalOpen] = useState(false);

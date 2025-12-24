@@ -117,24 +117,6 @@ export default function LoginPage() {
               )}
             </div>
 
-            <div className="flex items-center justify-between text-sm">
-              <label className="flex items-center cursor-pointer group">
-                <input
-                  type="checkbox"
-                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500 cursor-pointer"
-                />
-                <span className="ml-2 text-gray-600 group-hover:text-blue-600 transition-colors">
-                  Remember me
-                </span>
-              </label>
-              <button
-                type="button"
-                className="text-blue-500 hover:text-blue-600 hover:underline transition-all"
-              >
-                Forgot Password?
-              </button>
-            </div>
-
             <button
               type="submit"
               disabled={isLoading}
@@ -172,18 +154,6 @@ export default function LoginPage() {
               <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 to-blue-500 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300"></div>
             </button>
           </form>
-
-          <div className="mt-6 text-center">
-            <p className="text-gray-600 text-sm">
-              Don't have an account?{" "}
-              <button
-                type="button"
-                className="text-blue-500 font-semibold hover:text-blue-600 hover:underline transition-all"
-              >
-                Sign up
-              </button>
-            </p>
-          </div>
         </div>
       </div>
 

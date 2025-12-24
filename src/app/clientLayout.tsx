@@ -11,17 +11,17 @@ export default function ClientLayout({
   const router = useRouter();
   const pathname = usePathname();
 
-  // useEffect(() => {
-  //   const token = sessionStorage.getItem("token");
+  useEffect(() => {
+    const token = sessionStorage.getItem("token");
 
-  //   if (!token && !pathname.startsWith("/auth/login")) {
-  //     router.replace("/auth/login");
-  //   }
+    if (!token && !pathname.startsWith("/auth/login")) {
+      router.replace("/auth/login");
+    }
 
-  //   if (token && pathname.startsWith("/auth/login")) {
-  //     router.replace("/admin/dashboard");
-  //   }
-  // }, [pathname, router]);
+    if (token && pathname.startsWith("/auth/login")) {
+      router.replace("/admin/dashboard");
+    }
+  }, [pathname, router]);
 
   return <>{children}</>;
 }

@@ -188,13 +188,6 @@ export default function QuizDetailPage() {
         >
           <ArrowLeft className="w-4 h-4" /> Kembali
         </Button>
-
-        <Button
-          onClick={handleAddQuestion}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
-        >
-          <Plus className="w-4 h-4" /> Tambah Soal
-        </Button>
       </div>
 
       <Card className="shadow-lg rounded-2xl border-0">
