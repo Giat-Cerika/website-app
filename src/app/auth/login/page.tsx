@@ -3,6 +3,9 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { User, Lock, Eye, EyeOff } from "lucide-react";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+const LOGIN_ENDPOINT = "/admin/login";
+
 
 export default function LoginPage() {
   const router = useRouter();
@@ -17,7 +20,7 @@ export default function LoginPage() {
     setIsLoading(true);
 
     const response = await fetch(
-      "https://service-app-production-f175.up.railway.app/api/v1/admin/login",
+      `${API_BASE_URL}${LOGIN_ENDPOINT}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },

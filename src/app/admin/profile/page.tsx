@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { User, Mail, Calendar, Shield, Loader2 } from "lucide-react";
-// import Swal from "sweetalert2";
+import Swal from "sweetalert2";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+const PROFILE_ENDPOINT = "/admin/me";
 
 interface Profile {
   name: string;
@@ -21,12 +23,12 @@ export default function ProfilePage() {
       try {
         const token = sessionStorage.getItem("token");
         if (!token) {
-            // Swal.fire("Error", "Anda belum login!", "error");
+            Swal.fire("Error", "Anda belum login!", "error");
           return;
         }
 
         const res = await fetch(
-          `https://service-app-production-f175.up.railway.app/api/v1/admin/me`,
+          `${API_BASE_URL}${PROFILE_ENDPOINT}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
