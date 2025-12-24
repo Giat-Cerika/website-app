@@ -12,6 +12,7 @@ import {
   LogOut,
   Newspaper,
   Building2,
+  Database
 } from "lucide-react";
 
 interface SidebarProps {
@@ -31,6 +32,7 @@ export default function Sidebar({ isOpen }: SidebarProps) {
     { icon: BookOpen, label: "Materi", path: "/admin/materi" },
     { icon: Video, label: "Video Pembelajaran", path: "/admin/video" },
     { icon: TrendingUp, label: "Traffic Light Assesment", path: "/admin/tlm"},
+    { icon: Database, label: "Data Prediction", path: "/admin/data"},
     { icon: User, label: "Profile", path: "/admin/profile" },
   ];
 

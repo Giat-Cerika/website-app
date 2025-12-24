@@ -35,6 +35,10 @@ export const API_ENDPOINTS = {
     BY_ID: (id: string) => `/question/${id}`,
     RESPONSES: (id: string) => `/question/${id}/responses`,
   },
+  PREDICTION: {
+    BASE: '/prediction',
+    BY_ID: (id: string) => `/prediction/${id}`,
+  },
   USERS: {
     BASE: '/users',
     BY_ID: (id: string) => `/users/${id}`,

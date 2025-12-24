@@ -16,6 +16,7 @@ import { ClassRepository } from './class.repository';
 import { CategoryRepository } from './category.repository';
 import { QuizRepository } from './quiz.repository';
 import { QuestionRepository } from './question.repository';
+import { PredictionRepository } from './prediction.repository';
 
 // Create singleton instances
 export const authRepository = new AuthRepository();
@@ -25,3 +26,4 @@ export const classRepository = new ClassRepository();
 export const categoryRepository = new CategoryRepository();
 export const quizRepository = new QuizRepository();
 export const questionRepository = new QuestionRepository();
+export const predictionRepository = new PredictionRepository();
