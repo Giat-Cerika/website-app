@@ -51,6 +51,7 @@ export default function QuizDetailPage() {
       year: "numeric",
       hour: "2-digit",
       minute: "2-digit",
+      second: "2-digit",
     });
 
   const formatDateOnly = (date: string) =>
@@ -65,15 +66,14 @@ export default function QuizDetailPage() {
     const endDate = new Date(end);
 
     const sameDay =
-      startDate.toDateString() === endDate.toDateString();
+      startDate.getFullYear() === endDate.getFullYear() &&
+      startDate.getMonth() === endDate.getMonth() &&
+      startDate.getDate() === endDate.getDate();
 
-    const startIsMidnight =
-      startDate.getHours() === 0 && startDate.getMinutes() === 0;
+    const isMidnight = (d: Date) =>
+      d.getHours() === 0 && d.getMinutes() === 0;
 
-    const endIsMidnight =
-      endDate.getHours() === 0 && endDate.getMinutes() === 0;
-
-    return sameDay && startIsMidnight && endIsMidnight;
+    return sameDay && isMidnight(startDate) && isMidnight(endDate);
   };
 
   const handleChangeStatus = async (newStatus: number) => {
