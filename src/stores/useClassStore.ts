@@ -13,6 +13,7 @@ interface ClassState {
     total_data: number;
     total_pages: number;
   } | null;
+  total: number;
 
   fetchClasses: (params?: any) => Promise<void>;
   fetchClassById: (id: string) => Promise<void>;
@@ -28,6 +29,7 @@ export const useClassStore = create<ClassState>((set, get) => ({
   pagination: null,
   isLoading: false,
   error: null,
+  total: 0,
 
   fetchClasses: async (params) => {
     set({ isLoading: true, error: null });
@@ -47,6 +49,7 @@ export const useClassStore = create<ClassState>((set, get) => ({
         classes: mappedClasses,
         pagination: res.pagination,
         isLoading: false,
+        total: res.pagination.total_data ?? 0,
       });
     } catch (error: any) {
       set({ error: error.message, isLoading: false });

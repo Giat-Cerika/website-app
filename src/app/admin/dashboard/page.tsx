@@ -1,25 +1,52 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import {
   FileText,
   Video,
-  User,
-  BarChart3,
+  School,
   Edit,
   Smile,
   Clipboard,
   PlayCircle,
 } from "lucide-react";
+import { useMateriStore } from "@/stores/useMaterialStore";
+import { useClassStore } from "@/stores/useClassStore";
+import { useVideoStore } from "@/stores/useVideoStore";
+import { useQuizStore } from "@/stores/useQuizStore";
+import { usePredictionStore } from "@/stores/usePredictionStore";
 
 export default function DashboardPage() {
   const router = useRouter();
+  const fetchMateri = useMateriStore((s) => s.fetchMateri);
+  const totalMateri = useMateriStore((s) => s.total);
+
+  const fetchClass = useClassStore((s) => s.fetchClasses);
+  const totalClass = useClassStore((s) => s.total);
+  
+  const fetchQuiz = useQuizStore((s) => s.fetchQuizes);
+  const totalQuiz = useQuizStore((s) => s.total);
+
+  const fetchVideo = useVideoStore((s) => s.fetchVideos);
+  const totalVideo = useVideoStore((s) => s.total);
+  
+  const fetchPrediction = usePredictionStore((s) => s.fetchPredictions);
+  const totalPrediction = usePredictionStore((s) => s.total);
+
+    useEffect(() => {
+      fetchMateri();
+      fetchClass();
+      fetchQuiz();
+      fetchVideo();
+      fetchPrediction();
+    }, [fetchMateri, fetchClass, fetchQuiz, fetchVideo, fetchPrediction]);
 
   const stats = [
-    { label: "Total Artikel", value: "24", icon: FileText, color: "bg-blue-500" },
-    { label: "Video Tutorial", value: "15", icon: Video, color: "bg-purple-500" },
-    { label: "User Aktif", value: "1,234", icon: User, color: "bg-green-500" },
-    { label: "Kuesioner", value: "89", icon: BarChart3, color: "bg-orange-500" },
+    { label: "Total Materi", value: totalMateri, icon: FileText, color: "bg-blue-500" },
+    { label: "Video Edukasi", value: totalVideo, icon: Video, color: "bg-purple-500" },
+    { label: "Kelas Aktif", value: totalClass, icon: School, color: "bg-green-500" },
+    { label: "Total Kuis", value: totalQuiz, icon: Edit, color: "bg-orange-500" },
   ];
 
   const dashboardCards = [
@@ -28,48 +55,41 @@ export default function DashboardPage() {
       title: "Informasi Kesehatan",
       desc: "Artikel & Tips Kesehatan Gigi",
       color: "from-blue-400 to-blue-600",
-      count: "12",
-      link: "/dashboard/informasi",
+      count: totalMateri,
+      link: "/admin/materi",
     },
     {
       icon: Edit,
-      title: "Kuesioner",
-      desc: "Isi Kuesioner Kesehatan",
+      title: "Kuis",
+      desc: "Uji Pemahaman tentang Gigi",
       color: "from-cyan-400 to-cyan-600",
-      count: "5",
-      link: "/dashboard/kuisioner",
+      count: totalQuiz,
+      link: "/admin/kuis",
     },
     {
       icon: Smile,
       title: "Cek Kesehatan Gigi",
       desc: "Prediksi Karies Gigi",
       color: "from-teal-400 to-teal-600",
-      count: "New",
-      link: "/dashboard/prediksi",
+      count: totalPrediction,
+      link: "/admin/data",
     },
     {
-      icon: Clipboard,
-      title: "Materi Pembelajaran",
-      desc: "Bahan Belajar & Edukasi",
+      icon: School,
+      title: "Kelas Aktif",
+      desc: "Daftar kelas yang aktif digunakan",
       color: "from-purple-400 to-purple-600",
-      count: "8",
-      link: "/dashboard/materi",
+      count: totalClass,
+      link: "/admin/kelas",
     },
     {
       icon: PlayCircle,
       title: "Video Pembelajaran",
       desc: "Tutorial & Demonstrasi",
       color: "from-pink-400 to-pink-600",
-      count: "15",
-      link: "/dashboard/video",
+      count: totalVideo,
+      link: "/admin/video",
     },
-  ];
-
-  const activities = [
-    { action: "Artikel baru ditambahkan", time: "2 jam yang lalu", color: "bg-blue-500" },
-    { action: "Video pembelajaran diupdate", time: "5 jam yang lalu", color: "bg-purple-500" },
-    { action: "User baru mendaftar", time: "1 hari yang lalu", color: "bg-green-500" },
-    { action: "Kuesioner baru dibuat", time: "2 hari yang lalu", color: "bg-orange-500" },
   ];
 
   return (
@@ -148,26 +168,6 @@ export default function DashboardPage() {
         })}
       </div>
 
-      {/* Activity Section */}
-      <div className="bg-white rounded-2xl shadow-lg p-6">
-        <h3 className="text-xl font-bold text-gray-800 mb-4">
-          Aktivitas Terbaru
-        </h3>
-        <div className="space-y-4">
-          {activities.map((activity, i) => (
-            <div
-              key={i}
-              className="flex items-center gap-4 p-4 hover:bg-gray-50 rounded-xl transition-colors"
-            >
-              <div className={`${activity.color} w-3 h-3 rounded-full`}></div>
-              <div className="flex-1">
-                <p className="font-medium text-gray-800">{activity.action}</p>
-                <p className="text-sm text-gray-500">{activity.time}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
     </>
   );
 }

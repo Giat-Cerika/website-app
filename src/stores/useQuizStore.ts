@@ -13,6 +13,7 @@ interface QuizState {
     total_data: number;
     total_pages: number;
   } | null;
+  total: number;
 
   fetchQuizes: (params?: any) => Promise<void>;
   fetchQuizById: (id: string) => Promise<void>;
@@ -30,6 +31,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
   pagination: null,
   isLoading: false,
   error: null,
+  total: 0,
 
   fetchQuizes: async (params) => {
     set({ isLoading: true, error: null });
@@ -56,6 +58,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
       set({
         quizes: mappedQuizes,
         pagination: res.pagination,
+        total: res.pagination.total_data,
         isLoading: false,
       });
     } catch (error: any) {

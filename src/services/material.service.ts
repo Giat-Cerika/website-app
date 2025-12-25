@@ -21,6 +21,7 @@ export class MateriService {
         success: true,
         data: response.data,
         pagination: response.pagination,
+        total: response.pagination.total_data,
       };
     } catch (error: any) {
       return {

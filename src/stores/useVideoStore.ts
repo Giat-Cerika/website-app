@@ -7,6 +7,7 @@ interface VideoState {
   selectedVideo: Video | null;
   isLoading: boolean;
   error: string | null;
+  total:number;
 
   fetchVideos: (params?: any) => Promise<void>;
   fetchVideoById: (id: string) => Promise<void>;
@@ -21,6 +22,7 @@ export const useVideoStore = create<VideoState>((set) => ({
   selectedVideo: null,
   isLoading: false,
   error: null,
+  total: 0,
 
   fetchVideos: async (params) => {
     set({ isLoading: true, error: null });
@@ -36,7 +38,7 @@ export const useVideoStore = create<VideoState>((set) => ({
         updatedAt: item.updatedAt || "",
       }));
 
-      set({ videos: mappedVideos, isLoading: false });
+      set({ videos: mappedVideos, isLoading: false, total: response.pagination.total_data });
     } catch (error: any) {
       set({ error: error.message, isLoading: false });
     }

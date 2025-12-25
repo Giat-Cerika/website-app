@@ -307,7 +307,7 @@ export default function CariesRiskForm() {
                 <div className="relative">
                   <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
                   <input
-                    type="date"
+                    type="datetime-local"
                     value={formData.date_of_evaluation}
                     onChange={(e) =>
                       setFormData({ ...formData, date_of_evaluation: e.target.value })

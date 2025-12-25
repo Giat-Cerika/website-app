@@ -39,6 +39,7 @@ export const useMateriStore = create<MateriState>((set, get) => ({
     if (result.success) {
       set({
         materi: result.data || [],
+        total: result.pagination?.total_data ?? 0,
         isLoading: false,
       });
     } else {

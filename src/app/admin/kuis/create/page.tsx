@@ -105,6 +105,16 @@ export default function CreateQuizPage() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  const formatLocalDateTime = (value: string) => {
+    const date = new Date(value);
+
+    const fakeUTC = new Date(
+      date.getTime() - date.getTimezoneOffset() * 60000
+    );
+
+    return fakeUTC.toISOString();
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -113,12 +123,14 @@ export default function CreateQuizPage() {
       return;
     }
 
+    setLoading(true);
+
     const payload = {
       code: form.code,
       title: form.title,
       quiz_type_id: form.quiz_type_id,
-      start_date: new Date(form.start_date).toISOString(),
-      end_date: new Date(form.end_date).toISOString(),
+      start_date: formatLocalDateTime(form.start_date),
+      end_date: formatLocalDateTime(form.end_date),
       description,
     };
 
@@ -227,10 +239,22 @@ export default function CreateQuizPage() {
             <Button
               type="submit"
               disabled={loading}
-              className="w-full flex items-center gap-2"
+              className="w-full flex items-center justify-center gap-2"
             >
-              <Save className="w-5 h-5" />
-              {loading ? "Menyimpan..." : "Simpan Kuis"}
+              {loading ? (
+                <>
+                  <svg
+                    className="animate-spin h-5 w-5"
+                    viewBox="0 0 24 24"
+                  />
+                  Menyimpan...
+                </>
+              ) : (
+                <>
+                  <Save className="w-5 h-5" />
+                  Simpan Kuis
+                </>
+              )}
             </Button>
 
           </form>

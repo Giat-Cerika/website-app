@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { User, Mail, Calendar, Shield, Loader2 } from "lucide-react";
+import { Mail, Shield, Loader2 } from "lucide-react";
 import Swal from "sweetalert2";
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 const PROFILE_ENDPOINT = "/admin/me";
@@ -43,7 +43,6 @@ export default function ProfilePage() {
         const data = await res.json();
         setProfile(data.data || data);
       } catch (error) {
-        // Swal.fire("Gagal", "Tidak dapat memuat profil pengguna", "error");
       } finally {
         setIsLoading(false);
       }
@@ -87,14 +86,6 @@ export default function ProfilePage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl">
-          <User className="w-6 h-6 text-blue-500" />
-          <div>
-            <p className="text-gray-600 text-sm">Nama Lengkap</p>
-            <p className="font-semibold text-gray-800">{profile.name}</p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl">
           <Mail className="w-6 h-6 text-cyan-500" />
           <div>
             <p className="text-gray-600 text-sm">Username</p>
@@ -108,20 +99,6 @@ export default function ProfilePage() {
             <p className="text-gray-600 text-sm">Peran</p>
             <p className="font-semibold text-gray-800 capitalize">
               {profile.role}
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl">
-          <Calendar className="w-6 h-6 text-orange-500" />
-          <div>
-            <p className="text-gray-600 text-sm">Bergabung Sejak</p>
-            <p className="font-semibold text-gray-800">
-              {new Date(profile.created_at).toLocaleDateString("id-ID", {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              })}
             </p>
           </div>
         </div>

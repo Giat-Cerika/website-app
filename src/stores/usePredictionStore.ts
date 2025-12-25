@@ -8,6 +8,7 @@ interface PredictionState {
   isLoading: boolean;
   error: string | null;
   pagination: PredictionPagination | null;
+  total: number;
 
   fetchPredictions: (params?: any) => Promise<void>;
   fetchPredictionById: (id: string) => Promise<void>;
@@ -21,6 +22,7 @@ export const usePredictionStore = create<PredictionState>((set, get) => ({
   pagination: null,
   isLoading: false,
   error: null,
+  total: 0,
 
   fetchPredictions: async (params) => {
     set({ isLoading: true, error: null });
@@ -31,6 +33,7 @@ export const usePredictionStore = create<PredictionState>((set, get) => ({
         predictions: res.data,
         pagination: res.pagination,
         isLoading: false,
+        total: res.pagination.total_data,
       });
     } catch (error: any) {
       set({ error: error.message, isLoading: false });
