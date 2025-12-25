@@ -31,11 +31,110 @@ export default function PredictionsPage() {
         return () => clearTimeout(delaySearch);
     }, [searchInput, fetchPredictions, per_page]);
 
-    //   const openViewModal = async (item: any) => {
-    //     await fetchPredictionById(item.id);
-    //     setIsModalOpen(true);
-    //     setIsAnimating(true);
-    //   };
+    const openViewModal = async (item: any) => {
+        usePredictionStore.setState({ selectedPrediction: item });
+        setIsModalOpen(true);
+        setIsAnimating(true);
+    };
+
+    // Helper functions to get label from value
+    const getAttitudeLabel = (value: number) => {
+        const options = [
+            { label: "A = No current disease", value: 1 },
+            { label: "B = Need for repair, maintenance", value: 2 },
+            { label: "C = Active disease", value: 3 },
+        ];
+        return options.find(opt => opt.value === value)?.label || value;
+    };
+
+    const getSalivaLabel = (key: string, value: number) => {
+        const salivaOptions: { [key: string]: { label: string; value: number }[] } = {
+            hydration: [
+                { label: ">60 sec", value: 3 },
+                { label: "30-60 sec", value: 2 },
+                { label: "<30 sec", value: 1 },
+            ],
+            viscosity: [
+                { label: "Sticky", value: 3 },
+                { label: "Frothy", value: 2 },
+                { label: "Watery", value: 1 },
+            ],
+            ph: [
+                { label: "5.0-5.8", value: 3 },
+                { label: "5.8-6.8", value: 2 },
+                { label: "6.8-7.8", value: 1 },
+            ],
+            quantity: [
+                { label: "<15 ml", value: 3 },
+                { label: "15-50 ml", value: 2 },
+                { label: ">50 ml", value: 1 },
+            ],
+            buffering: [
+                { label: "0-5 pts", value: 3 },
+                { label: "6-9 pts", value: 2 },
+                { label: "10-12 pts", value: 1 },
+            ],
+        };
+        return salivaOptions[key]?.find(opt => opt.value === value)?.label || value;
+    };
+
+    const getPlaqueLabel = (key: string, value: number) => {
+        const plaqueOptions: { [key: string]: { label: string; value: number }[] } = {
+            ph: [
+                { label: "5.5", value: 3 },
+                { label: "6.0-6.5", value: 2 },
+                { label: "7.0", value: 1 },
+            ],
+            maturity: [
+                { label: "BLUE STAIN", value: 3 },
+                { label: "RED STAIN", value: 1 },
+            ],
+        };
+        return plaqueOptions[key]?.find(opt => opt.value === value)?.label || value;
+    };
+
+    const getCariesHistoryLabel = (value: number) => {
+        const options = [
+            { label: "Tidak ada Riwayat", value: 1 },
+            { label: "Karies Awal", value: 2 },
+            { label: "Karies Aktif", value: 3 },
+        ];
+        return options.find(opt => opt.value === value)?.label || value;
+    };
+
+    const getDietLabel = (key: string, value: number) => {
+        const dietOptions: { [key: string]: { label: string; value: number }[] } = {
+            sugar: [
+                { label: ">2", value: 3 },
+                { label: ">1", value: 2 },
+                { label: "Nil", value: 1 },
+            ],
+            acid: [
+                { label: ">3", value: 3 },
+                { label: ">2", value: 2 },
+                { label: "<2", value: 1 },
+            ],
+        };
+        return dietOptions[key]?.find(opt => opt.value === value)?.label || value;
+    };
+
+    const getFluorideLabel = (value: number) => {
+        const options = [
+            { label: "Regular fluoride exposure", value: 1 },
+            { label: "Occasional fluoride", value: 2 },
+            { label: "No fluoride", value: 3 },
+        ];
+        return options.find(opt => opt.value === value)?.label || value;
+    };
+
+    const getModifyingFactorLabel = (value: number) => {
+        const options = [
+            { label: "Low risk factors", value: 1 },
+            { label: "Moderate risk factors", value: 2 },
+            { label: "High risk factors", value: 3 },
+        ];
+        return options.find(opt => opt.value === value)?.label || value;
+    };
 
     const closeModal = () => {
         setIsAnimating(false);
@@ -292,6 +391,9 @@ export default function PredictionsPage() {
                         data={predictions}
                         fields={fields}
                         onDelete={handleDelete}
+                        onView={openViewModal}
+                        page={page}
+                        perPage={per_page}
                     />
                 )}
             </div>
@@ -311,7 +413,7 @@ export default function PredictionsPage() {
                         onClick={(e) => e.stopPropagation()}
                     >
                         {/* Header */}
-                        <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-6 rounded-t-2xl">
+                        <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-6 rounded-t-2xl z-10">
                             <div className="flex justify-between items-center">
                                 <h2 className="text-2xl font-bold">Detail Prediksi</h2>
                                 <button
@@ -331,7 +433,7 @@ export default function PredictionsPage() {
                                         <User className="w-5 h-5 text-blue-600" />
                                         <p className="text-sm font-semibold text-gray-600">Nama Pasien</p>
                                     </div>
-                                    <p className="text-lg font-bold text-gray-800">{selectedPrediction.patient_name}</p>
+                                    <p className="text-lg font-bold text-gray-800">{selectedPrediction.patient_name || "-"}</p>
                                 </div>
 
                                 <div className="p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl border border-purple-200">
@@ -397,22 +499,22 @@ export default function PredictionsPage() {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
                                         <p className="text-sm font-semibold text-gray-600 mb-1">Attitude & Status</p>
-                                        <p className="text-2xl font-bold text-gray-800">{selectedPrediction.caries_risk.attitude_and_status}</p>
+                                        <p className="text-lg font-bold text-gray-800">{getAttitudeLabel(selectedPrediction.caries_risk.attitude_and_status)}</p>
                                     </div>
 
                                     <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
                                         <p className="text-sm font-semibold text-gray-600 mb-1">Caries History</p>
-                                        <p className="text-2xl font-bold text-gray-800">{selectedPrediction.caries_risk.caries_history}</p>
+                                        <p className="text-lg font-bold text-gray-800">{getCariesHistoryLabel(selectedPrediction.caries_risk.caries_history)}</p>
                                     </div>
 
                                     <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
                                         <p className="text-sm font-semibold text-gray-600 mb-1">Fluoride</p>
-                                        <p className="text-2xl font-bold text-gray-800">{selectedPrediction.caries_risk.fluoride}</p>
+                                        <p className="text-lg font-bold text-gray-800">{getFluorideLabel(selectedPrediction.caries_risk.fluoride)}</p>
                                     </div>
 
                                     <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
                                         <p className="text-sm font-semibold text-gray-600 mb-1">Modifying Factor</p>
-                                        <p className="text-2xl font-bold text-gray-800">{selectedPrediction.caries_risk.modifying_factor}</p>
+                                        <p className="text-lg font-bold text-gray-800">{getModifyingFactorLabel(selectedPrediction.caries_risk.modifying_factor)}</p>
                                     </div>
                                 </div>
 
@@ -422,11 +524,11 @@ export default function PredictionsPage() {
                                     <div className="grid grid-cols-2 gap-3">
                                         <div>
                                             <p className="text-sm text-gray-600">Sugar</p>
-                                            <p className="text-xl font-bold text-gray-800">{selectedPrediction.caries_risk.diet.sugar}</p>
+                                            <p className="text-lg font-bold text-gray-800">{getDietLabel('sugar', selectedPrediction.caries_risk.diet.sugar)}</p>
                                         </div>
                                         <div>
                                             <p className="text-sm text-gray-600">Acid</p>
-                                            <p className="text-xl font-bold text-gray-800">{selectedPrediction.caries_risk.diet.acid}</p>
+                                            <p className="text-lg font-bold text-gray-800">{getDietLabel('acid', selectedPrediction.caries_risk.diet.acid)}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -439,13 +541,13 @@ export default function PredictionsPage() {
                                             {selectedPrediction.caries_risk.plaque.ph && (
                                                 <div>
                                                     <p className="text-sm text-gray-600">pH</p>
-                                                    <p className="text-xl font-bold text-gray-800">{selectedPrediction.caries_risk.plaque.ph}</p>
+                                                    <p className="text-lg font-bold text-gray-800">{getPlaqueLabel('ph', selectedPrediction.caries_risk.plaque.ph)}</p>
                                                 </div>
                                             )}
                                             {selectedPrediction.caries_risk.plaque.maturity && (
                                                 <div>
                                                     <p className="text-sm text-gray-600">Maturity</p>
-                                                    <p className="text-xl font-bold text-gray-800">{selectedPrediction.caries_risk.plaque.maturity}</p>
+                                                    <p className="text-lg font-bold text-gray-800">{getPlaqueLabel('maturity', selectedPrediction.caries_risk.plaque.maturity)}</p>
                                                 </div>
                                             )}
                                         </div>
@@ -457,20 +559,20 @@ export default function PredictionsPage() {
                                     <div className="p-4 bg-cyan-50 rounded-lg border border-cyan-200">
                                         <h4 className="font-bold text-gray-800 mb-3">Saliva</h4>
                                         {selectedPrediction.caries_risk.saliva.resting_saliva && (
-                                            <div>
+                                            <div className="mb-4">
                                                 <p className="text-sm font-semibold text-gray-700 mb-2">Resting Saliva</p>
-                                                <div className="grid grid-cols-3 gap-3">
-                                                    <div>
-                                                        <p className="text-xs text-gray-600">Hydration</p>
-                                                        <p className="text-lg font-bold text-gray-800">{selectedPrediction.caries_risk.saliva.resting_saliva.hydration}</p>
+                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                                    <div className="bg-white p-3 rounded-lg">
+                                                        <p className="text-xs text-gray-600 mb-1">Hydration</p>
+                                                        <p className="text-sm font-bold text-gray-800">{getSalivaLabel('hydration', selectedPrediction.caries_risk.saliva.resting_saliva.hydration)}</p>
                                                     </div>
-                                                    <div>
-                                                        <p className="text-xs text-gray-600">Viscosity</p>
-                                                        <p className="text-lg font-bold text-gray-800">{selectedPrediction.caries_risk.saliva.resting_saliva.viscosity}</p>
+                                                    <div className="bg-white p-3 rounded-lg">
+                                                        <p className="text-xs text-gray-600 mb-1">Viscosity</p>
+                                                        <p className="text-sm font-bold text-gray-800">{getSalivaLabel('viscosity', selectedPrediction.caries_risk.saliva.resting_saliva.viscosity)}</p>
                                                     </div>
-                                                    <div>
-                                                        <p className="text-xs text-gray-600">pH</p>
-                                                        <p className="text-lg font-bold text-gray-800">{selectedPrediction.caries_risk.saliva.resting_saliva.ph}</p>
+                                                    <div className="bg-white p-3 rounded-lg">
+                                                        <p className="text-xs text-gray-600 mb-1">pH</p>
+                                                        <p className="text-sm font-bold text-gray-800">{getSalivaLabel('ph', selectedPrediction.caries_risk.saliva.resting_saliva.ph)}</p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -478,18 +580,18 @@ export default function PredictionsPage() {
                                         {selectedPrediction.caries_risk.saliva.stimulated_saliva && (
                                             <div>
                                                 <p className="text-sm font-semibold text-gray-700 mb-2">Stimulated Saliva</p>
-                                                <div className="grid grid-cols-3 gap-3">
-                                                    <div>
-                                                        <p className="text-xs text-gray-600">Quantity</p>
-                                                        <p className="text-lg font-bold text-gray-800">{selectedPrediction.caries_risk.saliva.stimulated_saliva.quantity}</p>
+                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                                    <div className="bg-white p-3 rounded-lg">
+                                                        <p className="text-xs text-gray-600 mb-1">Quantity</p>
+                                                        <p className="text-sm font-bold text-gray-800">{getSalivaLabel('quantity', selectedPrediction.caries_risk.saliva.stimulated_saliva.quantity)}</p>
                                                     </div>
-                                                    <div>
-                                                        <p className="text-xs text-gray-600">pH</p>
-                                                        <p className="text-lg font-bold text-gray-800">{selectedPrediction.caries_risk.saliva.stimulated_saliva.ph}</p>
+                                                    <div className="bg-white p-3 rounded-lg">
+                                                        <p className="text-xs text-gray-600 mb-1">pH</p>
+                                                        <p className="text-sm font-bold text-gray-800">{getSalivaLabel('ph', selectedPrediction.caries_risk.saliva.stimulated_saliva.ph)}</p>
                                                     </div>
-                                                    <div>
-                                                        <p className="text-xs text-gray-600">Buffering</p>
-                                                        <p className="text-lg font-bold text-gray-800">{selectedPrediction.caries_risk.saliva.stimulated_saliva.buffering}</p>
+                                                    <div className="bg-white p-3 rounded-lg">
+                                                        <p className="text-xs text-gray-600 mb-1">Buffering</p>
+                                                        <p className="text-sm font-bold text-gray-800">{getSalivaLabel('buffering', selectedPrediction.caries_risk.saliva.stimulated_saliva.buffering)}</p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -497,16 +599,6 @@ export default function PredictionsPage() {
                                     </div>
                                 )}
                             </div>
-                        </div>
-
-                        {/* Footer */}
-                        <div className="sticky bottom-0 bg-gray-50 p-4 rounded-b-2xl border-t border-gray-200">
-                            <button
-                                onClick={closeModal}
-                                className="w-full px-6 py-3 bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-lg hover:from-gray-700 hover:to-gray-800 transition-all font-medium shadow-lg"
-                            >
-                                Tutup
-                            </button>
                         </div>
                     </div>
                 </div>

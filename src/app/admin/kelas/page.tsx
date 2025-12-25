@@ -159,8 +159,8 @@ export default function KelasPage() {
               onClick={() => setPage(p)}
               disabled={isLoading}
               className={`px-3 py-1.5 rounded-lg border transition-all text-sm font-medium min-w-[40px] ${p === currentPage
-                  ? "bg-blue-600 text-white border-blue-600 shadow-md"
-                  : "border-gray-300 hover:bg-gray-100 text-gray-700"
+                ? "bg-blue-600 text-white border-blue-600 shadow-md"
+                : "border-gray-300 hover:bg-gray-100 text-gray-700"
                 } disabled:opacity-40`}
             >
               {p}
@@ -310,6 +310,8 @@ export default function KelasPage() {
             fields={fields}
             onEdit={openEditModal}
             onDelete={handleDelete}
+            page={page}
+            perPage={per_page}
           />
         )}
       </div>

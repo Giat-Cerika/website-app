@@ -18,7 +18,7 @@ export default function Header({ isSidebarOpen, onToggleSidebar }: HeaderProps) 
   const router = useRouter();
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
+    sessionStorage.removeItem("token");
     router.push("/auth/login");
   };
 

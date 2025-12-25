@@ -352,6 +352,8 @@ export default function KuisPage() {
                   quizes.find((q) => q.id === item.id)
                 )
             }
+            page={page}
+            perPage={per_page}
           />
 
         )}

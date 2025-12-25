@@ -14,6 +14,9 @@ interface AutoTableProps {
   onEdit?: (item: any) => void;
   onDelete?: (item: any) => void;
   onView?: (item: any) => void;
+
+  page?: number;
+  perPage?: number;
 }
 
 export default function AutoTable({
@@ -22,6 +25,8 @@ export default function AutoTable({
   onEdit,
   onDelete,
   onView,
+  page = 1,
+  perPage = data.length,
 }: AutoTableProps) {
   if (!data || data.length === 0)
     return (
@@ -64,7 +69,7 @@ export default function AutoTable({
               className="hover:bg-blue-50/50 transition-colors duration-200"
             >
               <td className="px-5 py-4 text-center text-gray-700 font-medium">
-                {index + 1}
+                {(page - 1) * perPage + index + 1}
               </td>
 
               {columns.map((col) => (

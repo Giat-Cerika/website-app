@@ -317,6 +317,8 @@ export default function KategoriPage() {
             fields={fields}
             onEdit={openEditModal}
             onDelete={handleDelete}
+            page={page}
+            perPage={per_page}
           />
         )}
       </div>
