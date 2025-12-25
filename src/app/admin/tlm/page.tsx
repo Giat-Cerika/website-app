@@ -92,8 +92,9 @@ export default function CariesRiskForm() {
     ],
   };
   const bacteriaOptions = [
-    { label: ">500,000", value: 3 },
-    { label: "<500,000", value: 1 },
+    { label: "Karies Aktif", value: 3 },
+    { label: "Karies Awal", value: 2},
+    { label: "Tidak ada Riwayat", value: 1 },
   ];
   const dietOptions: { [key: string]: { label: string; value: number }[] } = {
     sugar: [
