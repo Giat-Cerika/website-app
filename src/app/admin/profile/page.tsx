@@ -45,11 +45,6 @@ export default function ProfilePage() {
         const data = await res.json();
         setProfile(data.data || data);
       } catch (error) {
-        Swal.fire(
-          "Error",
-          error.message || "Gagal memuat data profil",
-          "error"
-        );
       } finally {
         setIsLoading(false);
       }
