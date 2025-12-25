@@ -218,6 +218,7 @@ export default function CreateQuizPage() {
                 <Input
                   type="datetime-local"
                   step="1"
+                  pattern="[0-9T:-]+"
                   name="start_date"
                   value={form.start_date}
                   onChange={handleChange}
@@ -231,6 +232,7 @@ export default function CreateQuizPage() {
                 <Input
                   type="datetime-local"
                   step="1"
+                  pattern="[0-9T:-]+"
                   name="end_date"
                   value={form.end_date}
                   onChange={handleChange}
