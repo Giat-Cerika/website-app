@@ -23,14 +23,16 @@ export default function ProfilePage() {
       try {
         const token = sessionStorage.getItem("token");
         if (!token) {
-            Swal.fire("Error", "Anda belum login!", "error");
+          Swal.fire("Error", "Anda belum login!", "error");
           return;
         }
 
         const res = await fetch(
           `${API_BASE_URL}${PROFILE_ENDPOINT}`,
           {
+            method: "GET",
             headers: {
+              "Content-Type": "application/json",
               Authorization: `Bearer ${token}`,
             },
           }
@@ -43,6 +45,11 @@ export default function ProfilePage() {
         const data = await res.json();
         setProfile(data.data || data);
       } catch (error) {
+        Swal.fire(
+          "Error",
+          error.message || "Gagal memuat data profil",
+          "error"
+        );
       } finally {
         setIsLoading(false);
       }
