@@ -451,7 +451,7 @@ export default function CariesRiskForm() {
             <div className="flex items-center gap-3 mb-4">
               <h2 className="text-xl font-bold text-gray-800">Caries History</h2>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               {bacteriaOptions.map((opt) => (
                 <button
                   key={opt.value}
