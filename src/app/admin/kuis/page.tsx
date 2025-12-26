@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Plus, Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { useEffect, useState, useRef } from "react";
+import { Plus, Search, ChevronLeft, ChevronRight, InfinityIcon, Loader2 } from "lucide-react";
 import AutoTable from "@/components/ui/table";
 import { useQuizStore } from "@/stores/useQuizStore";
 import { toastSuccess, toastError } from "@/lib/toast";
@@ -15,11 +15,17 @@ export default function KuisPage() {
   const [isOpen, setIsOpen] = useState(false);
   const [editItem, setEditItem] = useState<any>(null);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [description, setDescription] = useState("");
+  const [infiniteMode, setInfiniteMode] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
   const router = useRouter();
 
   const [searchInput, setSearchInput] = useState("");
   const [page, setPage] = useState(1);
   const per_page = 10;
+
+  const editorRef = useRef<HTMLDivElement | null>(null);
+  const summernoteInitialized = useRef(false);
 
   useEffect(() => {
     fetchQuizes({ page, per_page, search: searchInput });
@@ -34,8 +40,92 @@ export default function KuisPage() {
     return () => clearTimeout(delaySearch);
   }, [searchInput, fetchQuizes, per_page]);
 
+  // Load Summernote when modal opens
+  useEffect(() => {
+    const loadSummernote = async () => {
+      if (!isOpen || typeof window === "undefined") return;
+
+      // Load jQuery
+      if (!(window as any).jQuery) {
+        await new Promise((resolve, reject) => {
+          const script = document.createElement("script");
+          script.src =
+            "https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js";
+          script.onload = resolve;
+          script.onerror = reject;
+          document.head.appendChild(script);
+        });
+      }
+
+      // Load Summernote CSS
+      if (!document.querySelector('link[href*="summernote"]')) {
+        const css = document.createElement("link");
+        css.rel = "stylesheet";
+        css.href =
+          "https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.20/summernote-lite.min.css";
+        document.head.appendChild(css);
+      }
+
+      // Load Summernote JS
+      if (!(window as any).jQuery.fn.summernote) {
+        await new Promise((resolve, reject) => {
+          const script = document.createElement("script");
+          script.src =
+            "https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.20/summernote-lite.min.js";
+          script.onload = resolve;
+          script.onerror = reject;
+          document.body.appendChild(script);
+        });
+      }
+
+      const $ = (window as any).jQuery;
+
+      if ($ && editorRef.current && !summernoteInitialized.current) {
+        $(editorRef.current).summernote({
+          height: 200,
+          placeholder: "Tulis deskripsi kuis di sini...",
+          toolbar: [
+            ["style", ["bold", "italic", "underline"]],
+            ["para", ["ul", "ol"]],
+            ["insert", ["link"]],
+            ["view", ["fullscreen", "codeview"]],
+          ],
+          callbacks: {
+            onChange: (content: string) => {
+              setDescription(content);
+            },
+          },
+        });
+
+        $(editorRef.current).summernote("code", description);
+        summernoteInitialized.current = true;
+      }
+    };
+
+    if (isOpen) {
+      loadSummernote();
+    }
+
+    return () => {
+      const $ = (window as any).jQuery;
+      if ($ && editorRef.current && summernoteInitialized.current) {
+        $(editorRef.current).summernote("destroy");
+        summernoteInitialized.current = false;
+      }
+    };
+  }, [isOpen]);
+
   const openEditModal = (item: any) => {
     setEditItem(item);
+    setDescription(item.description || "");
+
+    // Check if dates have time or are set to 00:00:00
+    const startDate = new Date(item.start_date);
+    const endDate = new Date(item.end_date);
+    const hasTime = startDate.getHours() !== 0 || startDate.getMinutes() !== 0 ||
+      endDate.getHours() !== 0 || endDate.getMinutes() !== 0;
+
+    setInfiniteMode(!hasTime);
     setIsOpen(true);
     setIsAnimating(true);
   };
@@ -45,6 +135,8 @@ export default function KuisPage() {
     setTimeout(() => {
       setIsOpen(false);
       setEditItem(null);
+      setDescription("");
+      setInfiniteMode(false);
     }, 200);
   };
 
@@ -52,8 +144,22 @@ export default function KuisPage() {
     router.push(`/admin/kuis/${item.id}`);
   };
 
+  const formatDateTime = (dateStr: string, timeStr: string = "") => {
+    if (infiniteMode) {
+      return `${dateStr}T00:00:00Z`;
+    } else {
+      // Combine date and time
+      return new Date(dateStr + "T" + timeStr).toISOString();
+    }
+  };
+
   const handleSaveEdit = async () => {
     if (!editItem) return;
+
+    if (!editItem.title || !editItem.code || !description) {
+      toastError("Semua field wajib diisi");
+      return;
+    }
 
     const result = await Swal.fire({
       title: "Simpan perubahan?",
@@ -64,9 +170,19 @@ export default function KuisPage() {
       cancelButtonText: "Batal",
     });
 
+    setIsUpdating(true);
+
     if (result.isConfirmed) {
       try {
-        await updateQuiz(editItem.id, { title: editItem.title, code: editItem.code });
+        const payload = {
+          code: editItem.code,
+          title: editItem.title,
+          description: description,
+          start_date: formatDateTime(editItem.start_date_only, editItem.start_time_only),
+          end_date: formatDateTime(editItem.end_date_only, editItem.end_time_only),
+        };
+
+        await updateQuiz(editItem.id, payload);
         toastSuccess("Data kuis berhasil diperbarui");
         fetchQuizes({ page, per_page, search: searchInput });
         closeModal();
@@ -262,6 +378,11 @@ export default function KuisPage() {
             opacity: 0.5;
           }
         }
+
+        .note-editor {
+          border: 1px solid #d1d5db;
+          border-radius: 0.5rem;
+        }
       `}</style>
 
       <div className="flex items-center justify-between mb-6 animate-slideInDown">
@@ -338,7 +459,13 @@ export default function KuisPage() {
                   icon: "info",
                 })
                 : openEditModal(
-                  quizes.find((q) => q.id === item.id) // ambil data asli
+                  {
+                    ...quizes.find((q) => q.id === item.id),
+                    start_date_only: new Date(quizes.find((q) => q.id === item.id)?.start_date || "").toISOString().split("T")[0],
+                    start_time_only: new Date(quizes.find((q) => q.id === item.id)?.start_date || "").toTimeString().slice(0, 8),
+                    end_date_only: new Date(quizes.find((q) => q.id === item.id)?.end_date || "").toISOString().split("T")[0],
+                    end_time_only: new Date(quizes.find((q) => q.id === item.id)?.end_date || "").toTimeString().slice(0, 8),
+                  }
                 )
             }
             onDelete={(item) =>
@@ -363,12 +490,12 @@ export default function KuisPage() {
 
       {isOpen && editItem && (
         <div
-          className={`fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-center items-center z-50 transition-opacity duration-200 ${isAnimating ? "opacity-100" : "opacity-0"
+          className={`fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-center items-center z-50 transition-opacity duration-200 p-4 overflow-y-auto ${isAnimating ? "opacity-100" : "opacity-0"
             }`}
           onClick={closeModal}
         >
           <div
-            className={`bg-white p-6 rounded-xl shadow-xl w-full max-w-md transition-transform duration-200 ${isAnimating ? "translate-y-0 opacity-100" : "-translate-y-4 opacity-0"
+            className={`bg-white p-6 rounded-xl shadow-xl w-full max-w-2xl my-8 transition-transform duration-200 max-h-[90vh] overflow-y-auto ${isAnimating ? "translate-y-0 opacity-100" : "-translate-y-4 opacity-0"
               }`}
             onClick={(e) => e.stopPropagation()}
           >
@@ -377,10 +504,24 @@ export default function KuisPage() {
             <div className="flex flex-col gap-4">
               <div>
                 <label className="block font-medium text-gray-700 mb-2">
+                  Kode Kuis <span className="text-red-500">*</span>
+                </label>
+                <input
+                  className="w-full p-3 text-gray-800 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  value={editItem.code}
+                  onChange={(e) =>
+                    setEditItem({ ...editItem, code: e.target.value })
+                  }
+                  placeholder="QZ-001"
+                />
+              </div>
+
+              <div>
+                <label className="block font-medium text-gray-700 mb-2">
                   Judul Kuis <span className="text-red-500">*</span>
                 </label>
                 <input
-                  className="w-full p-3 text-gray-800 border border-gray-300 rounded-lg"
+                  className="w-full p-3 text-gray-800 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
                   value={editItem.title}
                   onChange={(e) =>
                     setEditItem({ ...editItem, title: e.target.value })
@@ -391,16 +532,74 @@ export default function KuisPage() {
 
               <div>
                 <label className="block font-medium text-gray-700 mb-2">
-                  Kode Kuis <span className="text-red-500">*</span>
+                  Deskripsi <span className="text-red-500">*</span>
                 </label>
+                <div ref={editorRef}></div>
+              </div>
+
+              <div className="flex items-center gap-3 p-4 bg-blue-50 rounded-lg border border-blue-200">
                 <input
-                  className="w-full p-3 text-gray-800 border border-gray-300 rounded-lg"
-                  value={editItem.code}
-                  onChange={(e) =>
-                    setEditItem({ ...editItem, code: e.target.value })
-                  }
-                  placeholder="QZ-001"
+                  type="checkbox"
+                  id="infiniteMode"
+                  checked={infiniteMode}
+                  onChange={(e) => setInfiniteMode(e.target.checked)}
+                  className="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
                 />
+                <label htmlFor="infiniteMode" className="font-medium text-gray-700 cursor-pointer">
+                  <span className="flex items-center gap-2">Infinity Mode<InfinityIcon className="w-4 h-4" /></span>
+                </label>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block font-medium text-gray-700 mb-2">
+                    Tanggal Mulai <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="date"
+                    className="w-full p-3 text-gray-800 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                    value={editItem.start_date_only}
+                    onChange={(e) =>
+                      setEditItem({ ...editItem, start_date_only: e.target.value })
+                    }
+                  />
+                  {!infiniteMode && (
+                    <input
+                      type="time"
+                      step={1}
+                      className="w-full p-3 text-gray-800 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none mt-2"
+                      value={editItem.start_time_only}
+                      onChange={(e) =>
+                        setEditItem({ ...editItem, start_time_only: e.target.value })
+                      }
+                    />
+                  )}
+                </div>
+
+                <div>
+                  <label className="block font-medium text-gray-700 mb-2">
+                    Tanggal Selesai <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="date"
+                    className="w-full p-3 text-gray-800 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                    value={editItem.end_date_only}
+                    onChange={(e) =>
+                      setEditItem({ ...editItem, end_date_only: e.target.value })
+                    }
+                  />
+                  {!infiniteMode && (
+                    <input
+                      type="time"
+                      step={1}
+                      className="w-full p-3 text-gray-800 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none mt-2"
+                      value={editItem.end_time_only}
+                      onChange={(e) =>
+                        setEditItem({ ...editItem, end_time_only: e.target.value })
+                      }
+                    />
+                  )}
+                </div>
               </div>
             </div>
 
@@ -415,7 +614,16 @@ export default function KuisPage() {
                 onClick={handleSaveEdit}
                 className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all active:scale-95 font-medium shadow-lg"
               >
-                Simpan Perubahan
+                {isUpdating ? (
+                  <>
+                    <span className="flex items-center gap-3">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Menyimpan...
+                    </span>
+                  </>
+                ) : (
+                  "Simpan Perubahan"
+                )}
               </button>
             </div>
           </div>

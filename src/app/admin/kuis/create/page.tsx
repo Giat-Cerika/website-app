@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Save } from "lucide-react";
+import { ArrowLeft, Save, InfinityIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,6 +16,7 @@ export default function CreateQuizPage() {
 
   const [loading, setLoading] = useState(false);
   const [description, setDescription] = useState("");
+  const [infiniteMode, setInfiniteMode] = useState(false);
 
   const {
     categories,
@@ -27,8 +28,10 @@ export default function CreateQuizPage() {
     code: "",
     title: "",
     quiz_type_id: "",
-    start_date: "",
-    end_date: "",
+    start_date_only: "",
+    start_time_only: "",
+    end_date_only: "",
+    end_time_only: "",
   });
 
   const editorRef = useRef<HTMLDivElement | null>(null);
@@ -73,7 +76,12 @@ export default function CreateQuizPage() {
       if ($ && editorRef.current) {
         $(editorRef.current).summernote({
           height: 250,
-          placeholder: "Tulis deskripsi kuis di sini...",
+          toolbar: [
+            ["style", ["bold", "italic", "underline"]],
+            ["para", ["ul", "ol"]],
+            ["insert", ["link"]],
+            ["view", ["fullscreen", "codeview"]],
+          ],
           callbacks: {
             onChange: (content: string) => {
               setDescription(content);
@@ -105,14 +113,18 @@ export default function CreateQuizPage() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const formatLocalDateTime = (value: string) => {
-    const date = new Date(value);
-
-    const fakeUTC = new Date(
-      date.getTime() - date.getTimezoneOffset() * 60000
-    );
-
-    return fakeUTC.toISOString();
+  const formatDateTime = (dateStr: string, timeStr: string = "") => {
+    if (infiniteMode) {
+      // Set time to 00:00:00 for infinite mode
+      const date = new Date(dateStr + "T00:00:00");
+      const fakeUTC = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+      return fakeUTC.toISOString();
+    } else {
+      // Combine date and time
+      const date = new Date(dateStr + "T" + timeStr);
+      const fakeUTC = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+      return fakeUTC.toISOString();
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -123,14 +135,24 @@ export default function CreateQuizPage() {
       return;
     }
 
+    if (!form.start_date_only || !form.end_date_only) {
+      toastError("Tanggal mulai dan selesai wajib diisi");
+      return;
+    }
+
+    if (!infiniteMode && (!form.start_time_only || !form.end_time_only)) {
+      toastError("Waktu mulai dan selesai wajib diisi");
+      return;
+    }
+
     setLoading(true);
 
     const payload = {
       code: form.code,
       title: form.title,
       quiz_type_id: form.quiz_type_id,
-      start_date: formatLocalDateTime(form.start_date),
-      end_date: formatLocalDateTime(form.end_date),
+      start_date: formatDateTime(form.start_date_only, form.start_time_only),
+      end_date: formatDateTime(form.end_date_only, form.end_time_only),
       description,
     };
 
@@ -148,6 +170,13 @@ export default function CreateQuizPage() {
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
+      <style>{`
+        .note-editor {
+          border: 1px solid #d1d5db;
+          border-radius: 0.5rem;
+        }
+      `}</style>
+
       <Button
         className="mb-4 flex items-center gap-2"
         onClick={() => router.back()}
@@ -164,31 +193,41 @@ export default function CreateQuizPage() {
           <form onSubmit={handleSubmit} className="space-y-6">
 
             <div>
-              <label className="font-semibold mb-1 block">Kode Kuis</label>
+              <label className="font-semibold mb-1 block">
+                Kode Kuis
+              </label>
               <Input
                 name="code"
                 value={form.code}
                 onChange={handleChange}
+
               />
             </div>
 
             <div>
-              <label className="font-semibold mb-1 block">Judul Kuis</label>
+              <label className="font-semibold mb-1 block">
+                Judul Kuis <span className="text-red-500">*</span>
+              </label>
               <Input
                 name="title"
                 value={form.title}
                 onChange={handleChange}
+
+                required
               />
             </div>
 
             <div>
-              <label className="font-semibold mb-1 block">Tipe Kuis</label>
+              <label className="font-semibold mb-1 block">
+                Tipe Kuis <span className="text-red-500">*</span>
+              </label>
               <select
                 name="quiz_type_id"
                 value={form.quiz_type_id}
                 onChange={handleChange}
-                className="w-full border rounded-md p-2"
+                className="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 disabled={quizTypeLoading}
+                required
               >
                 <option value="">
                   {quizTypeLoading ? "Memuat tipe..." : "Pilih Tipe"}
@@ -200,44 +239,89 @@ export default function CreateQuizPage() {
                   </option>
                 ))}
               </select>
-
             </div>
 
             <div>
               <label className="font-semibold mb-1 block">
-                Deskripsi Kuis
+                Deskripsi Kuis <span className="text-red-500">*</span>
               </label>
               <div ref={editorRef}></div>
+            </div>
+
+            <div className="flex items-center gap-3 p-4 bg-blue-50 rounded-lg border border-blue-200">
+              <input
+                type="checkbox"
+                id="infiniteMode"
+                checked={infiniteMode}
+                onChange={(e) => setInfiniteMode(e.target.checked)}
+                className="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500 cursor-pointer"
+              />
+              <label
+                htmlFor="infiniteMode"
+                className="font-medium text-gray-700 cursor-pointer select-none"
+              >
+                <span className="flex items-center gap-2">Infinity Mode<InfinityIcon className="w-4 h-4" /></span>
+              </label>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="font-semibold mb-1 block">
-                  Tanggal Mulai
+                  Tanggal Mulai <span className="text-red-500">*</span>
                 </label>
                 <Input
-                  type="datetime-local"
-                  step="1"
-                  pattern="[0-9T:-]+"
-                  name="start_date"
-                  value={form.start_date}
+                  type="date"
+                  name="start_date_only"
+                  value={form.start_date_only}
                   onChange={handleChange}
+                  required
+                  className="mb-2"
                 />
+                {!infiniteMode && (
+                  <Input
+                    type="time"
+                    name="start_time_only"
+                    value={form.start_time_only}
+                    onChange={handleChange}
+                    required={!infiniteMode}
+                    step="1"
+
+                  />
+                )}
               </div>
 
               <div>
                 <label className="font-semibold mb-1 block">
-                  Tanggal Selesai
+                  Tanggal Selesai <span className="text-red-500">*</span>
                 </label>
                 <Input
-                  type="datetime-local"
-                  step="1"
-                  pattern="[0-9T:-]+"
-                  name="end_date"
-                  value={form.end_date}
+                  type="date"
+                  name="end_date_only"
+                  value={form.end_date_only}
                   onChange={handleChange}
+                  required
+                  className="mb-2"
                 />
+                {!infiniteMode && (
+                  <Input
+                    type="time"
+                    name="end_time_only"
+                    value={form.end_time_only}
+                    onChange={handleChange}
+                    required={!infiniteMode}
+                    step="1"
+
+                  />
+                )}
               </div>
+            </div>
+
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <p className="text-sm text-yellow-800">
+                <strong>Catatan:</strong> {infiniteMode
+                  ? "Mode Infinity aktif - waktu akan diset ke 00:00:00 secara otomatis"
+                  : "Pastikan mengisi waktu dengan format 24 jam (HH:MM:SS)"}
+              </p>
             </div>
 
             <Button
@@ -248,7 +332,7 @@ export default function CreateQuizPage() {
               {loading ? (
                 <>
                   <svg
-                    className="animate-spin h-5 w-5"
+                    className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"
                     viewBox="0 0 24 24"
                   />
                   Menyimpan...
