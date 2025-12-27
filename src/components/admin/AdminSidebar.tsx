@@ -9,7 +9,7 @@ import {
   TrendingUp,
   BookOpen,
   Video,
-  LogOut,
+  HistoryIcon,
   Newspaper,
   Building2,
   Database
@@ -32,7 +32,8 @@ export default function Sidebar({ isOpen }: SidebarProps) {
     { icon: BookOpen, label: "Materi", path: "/admin/materi" },
     { icon: Video, label: "Video Pembelajaran", path: "/admin/video" },
     { icon: TrendingUp, label: "Traffic Light Assesment", path: "/admin/tlm"},
-    { icon: Database, label: "Data Prediction", path: "/admin/data"},
+    { icon: Database, label: "Data Prediksi", path: "/admin/data"},
+    { icon: HistoryIcon, label: "Riwayat Kuis", path: "/admin/history"},
     { icon: User, label: "Profile", path: "/admin/profile" },
   ];
 
