@@ -9,7 +9,6 @@ import {
   Loader2,
   Lock,
   LockOpen,
-  Plus,
   Eye,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -39,6 +38,7 @@ export default function QuizDetailPage() {
   } = useQuizStore();
 
   const [isUpdatingOrderMode, setIsUpdatingOrderMode] = useState(false);
+
 
   useEffect(() => {
     if (id) fetchQuizById(id);
@@ -78,6 +78,7 @@ export default function QuizDetailPage() {
 
   const handleChangeStatus = async (newStatus: number) => {
     if (!selectedQuiz) return;
+
     if (selectedQuiz.status === newStatus) {
       Swal.fire({
         title: "Info",
@@ -171,10 +172,6 @@ export default function QuizDetailPage() {
     }
   };
 
-  const handleAddQuestion = () => {
-    router.push(`/admin/kuis/${id}/add-question`);
-  };
-
   if (isLoading) {
     return (
       <div className="max-w-5xl mx-auto p-6 flex items-center justify-center min-h-96">
@@ -204,6 +201,12 @@ export default function QuizDetailPage() {
       </div>
     );
   }
+
+  const isDraftDisabled =
+    selectedQuiz.status !== 0 &&
+    Number(selectedQuiz.amount_assigned) > 0;
+
+  const showDraftButton = selectedQuiz.status !== 0;
 
   return (
     <div className="max-w-5xl mx-auto p-6 space-y-6">
@@ -255,24 +258,34 @@ export default function QuizDetailPage() {
             </span>
 
             <div className="flex gap-2">
-              {selectedQuiz.status !== 1 && (
+              {showDraftButton && (
                 <Button
-                  onClick={() => handleChangeStatus(1)}
-                  className="bg-green-600 hover:bg-green-700 text-white gap-2"
+                  onClick={() => handleChangeStatus(0)}
+                  disabled={isDraftDisabled}
+                  className={`gap-2 text-white ${isDraftDisabled
+                      ? "bg-gray-300 cursor-not-allowed"
+                      : "bg-gray-600 hover:bg-gray-700"
+                    }`}
                 >
-                  <LockOpen className="w-4 h-4" /> Open
+                  Draft
                 </Button>
               )}
 
-              {selectedQuiz.status !== 2 && (
-                <Button
-                  onClick={() => handleChangeStatus(2)}
-                  className="bg-red-600 hover:bg-red-700 text-white gap-2"
-                >
-                  <Lock className="w-4 h-4" /> Close
-                </Button>
-              )}
+              <Button
+                onClick={() => handleChangeStatus(1)}
+                className="gap-2 bg-green-600 hover:bg-green-700 text-white"
+              >
+                <LockOpen className="w-4 h-4" /> Open
+              </Button>
+
+              <Button
+                onClick={() => handleChangeStatus(2)}
+                className="gap-2 bg-red-600 hover:bg-red-700 text-white"
+              >
+                <Lock className="w-4 h-4" /> Close
+              </Button>
             </div>
+
           </div>
 
           <div className="flex flex-wrap gap-4 text-sm text-muted-foreground mt-3">
