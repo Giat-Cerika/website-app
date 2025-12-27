@@ -1,22 +1,44 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Search, ChevronLeft, ChevronRight, X, Activity, User, Calendar, Target, TrendingUp } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, X, Activity, User, Calendar, Target, TrendingUp, Send } from "lucide-react";
 import AutoTable from "@/components/ui/table";
 import { usePredictionStore } from "@/stores/usePredictionStore";
 import { toastSuccess, toastError } from "@/lib/toast";
 import Swal from "sweetalert2";
 
 export default function PredictionsPage() {
+    interface Student {
+        id: string;
+        name: string;
+        username: string;
+        nisn: string;
+    }
+
     const { predictions, selectedPrediction, isLoading, fetchPredictions, deletePrediction, pagination } =
         usePredictionStore();
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isAnimating, setIsAnimating] = useState(false);
+    const [isTLMModalOpen, setIsTLMModalOpen] = useState(false);
+    const [isTLMAnimating, setIsTLMAnimating] = useState(false);
 
     const [searchInput, setSearchInput] = useState("");
     const [page, setPage] = useState(1);
     const per_page = 10;
+
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+    const STUDENT_ENDPOINT = "/student/all";
+    const TLM_ENDPOINT = "/prediction/send-prediction";
+
+    // TLM Form State
+    const [students, setStudents] = useState<Student[]>([]);
+    const [isLoadingStudents, setIsLoadingStudents] = useState(false);
+    const [tlmForm, setTlmForm] = useState({
+        student_id: "",
+        suggestion: ""
+    });
+    const [isSendingTLM, setIsSendingTLM] = useState(false);
 
     useEffect(() => {
         fetchPredictions({ page, per_page, search: searchInput });
@@ -31,10 +53,106 @@ export default function PredictionsPage() {
         return () => clearTimeout(delaySearch);
     }, [searchInput, fetchPredictions, per_page]);
 
+    const fetchStudents = async () => {
+        setIsLoadingStudents(true);
+        try {
+            const response = await fetch(`${API_BASE_URL}${STUDENT_ENDPOINT}`, {
+                headers: {
+                    'Authorization': `Bearer ${sessionStorage.getItem('token')}`
+                }
+            });
+
+            if (!response.ok) throw new Error('Failed to fetch students');
+
+            const data = await response.json();
+            setStudents(data.data || data);
+        } catch (error) {
+            console.error('Error fetching students:', error);
+            toastError('Gagal memuat data mahasiswa');
+        } finally {
+            setIsLoadingStudents(false);
+        }
+    };
+
     const openViewModal = async (item: any) => {
         usePredictionStore.setState({ selectedPrediction: item });
         setIsModalOpen(true);
         setIsAnimating(true);
+    };
+
+    const openTLMModal = () => {
+        if (!selectedPrediction) {
+            toastError('Pilih data prediksi terlebih dahulu');
+            return;
+        }
+
+        fetchStudents();
+        setIsTLMModalOpen(true);
+        setIsTLMAnimating(true);
+        setTlmForm({ student_id: "", suggestion: "" });
+    };
+
+    const closeTLMModal = () => {
+        setIsTLMAnimating(false);
+        setTimeout(() => {
+            setIsTLMModalOpen(false);
+            setTlmForm({ student_id: "", suggestion: "" });
+        }, 200);
+    };
+
+    const handleSendTLM = async () => {
+        if (!selectedPrediction) {
+            toastError("Data prediksi tidak ditemukan");
+            return;
+        }
+
+        if (!tlmForm.student_id) {
+            toastError("Pilih mahasiswa terlebih dahulu");
+            return;
+        }
+
+        if (!tlmForm.suggestion.trim()) {
+            toastError("Masukkan saran terlebih dahulu");
+            return;
+        }
+
+        const result = await Swal.fire({
+            title: "Kirim data?",
+            text: "Yakin ingin mengirim data ini ke mahasiswa?",
+            icon: "question",
+            showCancelButton: true,
+            confirmButtonColor: "#3b82f6",
+            confirmButtonText: "Ya, kirim!",
+            cancelButtonText: "Batal",
+        });
+
+        if (!result.isConfirmed) return;
+
+        setIsSendingTLM(true);
+
+        try {
+            const response = await fetch(`${API_BASE_URL}${TLM_ENDPOINT}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${sessionStorage.getItem("token")}`,
+                },
+                body: JSON.stringify({
+                    prediction_id: selectedPrediction.id,
+                    user_id: tlmForm.student_id,
+                    suggestion: tlmForm.suggestion,
+                }),
+            });
+
+            if (!response.ok) throw new Error("Gagal mengirim data");
+
+            toastSuccess("Data berhasil dikirim");
+            closeTLMModal();
+        } catch (err: any) {
+            toastError(err.message || "Terjadi kesalahan");
+        } finally {
+            setIsSendingTLM(false);
+        }
     };
 
     // Helper functions to get label from value
@@ -416,12 +534,21 @@ export default function PredictionsPage() {
                         <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-6 rounded-t-2xl z-10">
                             <div className="flex justify-between items-center">
                                 <h2 className="text-2xl font-bold">Detail Prediksi</h2>
-                                <button
-                                    onClick={closeModal}
-                                    className="p-2 hover:bg-white/20 rounded-lg transition-all"
-                                >
-                                    <X className="w-6 h-6" />
-                                </button>
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        onClick={openTLMModal}
+                                        className="flex items-center gap-2 px-4 py-2 bg-white text-blue-600 rounded-lg hover:bg-blue-50 transition-all font-semibold"
+                                    >
+                                        <Send className="w-4 h-4" />
+                                        Kirim Data
+                                    </button>
+                                    <button
+                                        onClick={closeModal}
+                                        className="p-2 hover:bg-white/20 rounded-lg transition-all"
+                                    >
+                                        <X className="w-6 h-6" />
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
@@ -598,6 +725,131 @@ export default function PredictionsPage() {
                                         )}
                                     </div>
                                 )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* TLM Modal */}
+            {isTLMModalOpen && (
+                <div
+                    className={`fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center z-[60] p-4 transition-opacity duration-200 ${isTLMAnimating ? "opacity-100" : "opacity-0"
+                        }`}
+                    onClick={closeTLMModal}
+                >
+                    <div
+                        className={`bg-white rounded-2xl shadow-2xl w-full max-w-2xl transition-transform duration-200 ${isTLMAnimating ? "translate-y-0 opacity-100" : "-translate-y-4 opacity-0"
+                            }`}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {/* Header */}
+                        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-6 rounded-t-2xl">
+                            <div className="flex justify-between items-center">
+                                <div className="flex items-center gap-3">
+                                    <Send className="w-6 h-6" />
+                                    <h2 className="text-2xl font-bold">Kirim data prediksi ke Mahasiswa</h2>
+                                </div>
+                                <button
+                                    onClick={closeTLMModal}
+                                    className="p-2 hover:bg-white/20 rounded-lg transition-all"
+                                >
+                                    <X className="w-6 h-6" />
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="p-6 space-y-6">
+                            {/* Patient Info Preview */}
+                            {selectedPrediction && (
+                                <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+                                    <h3 className="font-semibold text-gray-700 mb-2">Data Prediksi:</h3>
+                                    <div className="grid grid-cols-2 gap-3 text-sm">
+                                        <div>
+                                            <p className="text-gray-600">Nama Pasien:</p>
+                                            <p className="font-bold text-gray-800">{selectedPrediction.patient_name}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-gray-600">Tingkat Risiko:</p>
+                                            <p className={`font-bold capitalize ${selectedPrediction.result.toLowerCase() === 'high' ? 'text-red-600' :
+                                                selectedPrediction.result.toLowerCase() === 'medium' ? 'text-yellow-600' : 'text-green-600'}`}>
+                                                {selectedPrediction.result}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p className="text-gray-600">Score:</p>
+                                            <p className="font-bold text-gray-800">{selectedPrediction.score}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-gray-600">Tanggal Evaluasi:</p>
+                                            <p className="font-bold text-gray-800">{selectedPrediction.date_of_evaluation}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Student Dropdown */}
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                    Pilih Mahasiswa <span className="text-red-500">*</span>
+                                </label>
+                                <select
+                                    value={tlmForm.student_id}
+                                    onChange={(e) => setTlmForm({ ...tlmForm, student_id: e.target.value })}
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all bg-white text-gray-800"
+                                    disabled={isLoadingStudents}
+                                >
+                                    <option value="">
+                                        {isLoadingStudents ? "Memuat data mahasiswa..." : "-- Pilih Mahasiswa --"}
+                                    </option>
+                                    {students.map((student: any) => (
+                                        <option key={student.id} value={student.id}>
+                                            {student.name} - {student.nisn || student.student_id}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Suggestion Textarea */}
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                    Saran/Suggestion <span className="text-red-500">*</span>
+                                </label>
+                                <textarea
+                                    value={tlmForm.suggestion}
+                                    onChange={(e) => setTlmForm({ ...tlmForm, suggestion: e.target.value })}
+                                    placeholder="Masukkan saran untuk mahasiswa"
+                                    rows={4}
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all resize-none text-gray-800"
+                                />
+                            </div>
+
+                            {/* Action Buttons */}
+                            <div className="flex gap-3 justify-end pt-4 border-t border-gray-200">
+                                <button
+                                    onClick={closeTLMModal}
+                                    disabled={isSendingTLM}
+                                    className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all font-semibold disabled:opacity-50"
+                                >
+                                    Batal
+                                </button>
+                                <button
+                                    onClick={handleSendTLM}
+                                    disabled={isSendingTLM || !tlmForm.student_id || !tlmForm.suggestion.trim()}
+                                    className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all font-semibold flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {isSendingTLM ? (
+                                        <>
+                                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                            Mengirim...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Send className="w-4 h-4" />
+                                            Kirim Data
+                                        </>
+                                    )}
+                                </button>
                             </div>
                         </div>
                     </div>
