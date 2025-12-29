@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import axiosInstance from "@/lib/axios";
 import { toastSuccess, toastError } from "@/lib/toast";
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from "lucide-react";
 
 export default function CreateVideoPage() {
   const [title, setTitle] = useState("");
@@ -39,7 +39,10 @@ export default function CreateVideoPage() {
 
       router.push("/admin/video");
     } catch (error: any) {
-      toastError(error?.response?.data?.message || "Terjadi kesalahan saat menyimpan data");
+      toastError(
+        error?.response?.data?.message ||
+          "Terjadi kesalahan saat menyimpan data"
+      );
     } finally {
       setLoading(false);
     }
@@ -60,9 +63,8 @@ export default function CreateVideoPage() {
             Tambah Video Baru
           </CardTitle>
         </CardHeader>
-        < CardContent >
+        <CardContent>
           <form onSubmit={handleSubmit} className="space-y-5">
-
             <div>
               <label className="block mb-1 font-medium text-gray-700">
                 Judul Video
@@ -92,7 +94,7 @@ export default function CreateVideoPage() {
 
             <div>
               <label className="block mb-1 font-medium text-gray-700">
-                Link Video (YouTube / Google Drive)
+                Link Video (YouTube)
               </label>
               <Input
                 placeholder="https://example.com/video"
@@ -110,11 +112,9 @@ export default function CreateVideoPage() {
             >
               {loading ? "Menyimpan..." : "Simpan Video"}
             </Button>
-
           </form>
-        </CardContent >
-      </Card >
-    </div >
-
+        </CardContent>
+      </Card>
+    </div>
   );
 }
