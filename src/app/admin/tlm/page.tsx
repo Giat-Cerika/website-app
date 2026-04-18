@@ -1,6 +1,15 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Save, AlertCircle, Activity, Droplet, Apple, Shield, AlertTriangle, Calendar } from "lucide-react";
+import {
+  Save,
+  AlertCircle,
+  Activity,
+  Droplet,
+  Apple,
+  Shield,
+  AlertTriangle,
+  Calendar,
+} from "lucide-react";
 import Swal from "sweetalert2";
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 const PREDICTION_SAVE_ENDPOINT = "/prediction/save";
@@ -93,7 +102,7 @@ export default function CariesRiskForm() {
   };
   const bacteriaOptions = [
     { label: "Tidak ada Riwayat", value: 1 },
-    { label: "Karies Awal", value: 2},
+    { label: "Karies Awal", value: 2 },
     { label: "Karies Aktif", value: 3 },
   ];
   const dietOptions: { [key: string]: { label: string; value: number }[] } = {
@@ -110,10 +119,16 @@ export default function CariesRiskForm() {
   };
 
   const getRiskColor = (v: number) =>
-    v === 1 ? "bg-green-500 hover:bg-green-600" : v === 2 ? "bg-yellow-500 hover:bg-yellow-600" : "bg-red-500 hover:bg-red-600";
+    v === 1
+      ? "bg-green-500 hover:bg-green-600"
+      : v === 2
+        ? "bg-yellow-500 hover:bg-yellow-600"
+        : "bg-red-500 hover:bg-red-600";
 
   const getActiveClass = (isActive: boolean) =>
-    isActive ? "ring-4 ring-blue-600 ring-offset-2 scale-105 shadow-lg" : "hover:scale-102";
+    isActive
+      ? "ring-4 ring-blue-600 ring-offset-2 scale-105 shadow-lg"
+      : "hover:scale-102";
 
   const getBacteriaScore = () => formData.bacteria;
   const getFluorideScore = () => {
@@ -124,14 +139,20 @@ export default function CariesRiskForm() {
   };
 
   const getModifyingFactorsScore = () => {
-    const count = Object.values(formData.modifying_factors).filter(Boolean).length;
+    const count = Object.values(formData.modifying_factors).filter(
+      Boolean,
+    ).length;
     if (count === 0) return 1; // Semua no, hijau
     return 3; // Ada 1 atau lebih yes, merah
   };
 
   const getFluorideColor = () => {
     const score = getFluorideScore();
-    return score === 1 ? "bg-green-500" : score === 2 ? "bg-yellow-500" : "bg-red-500";
+    return score === 1
+      ? "bg-green-500"
+      : score === 2
+        ? "bg-yellow-500"
+        : "bg-red-500";
   };
 
   const getModifyingFactorsColor = () => {
@@ -175,24 +196,27 @@ export default function CariesRiskForm() {
     setIsDetecting(true);
     setDetectionResult(null);
     const payload = {
-      "attitude_and_status": formData.attitude,
-      "caries_history": getBacteriaScore(),
-      "Saliva": getSalivaPayload(),
-      "Plaque": getPlaquePayload(),
-      "Diet": {
+      attitude_and_status: formData.attitude,
+      caries_history: getBacteriaScore(),
+      Saliva: getSalivaPayload(),
+      Plaque: getPlaquePayload(),
+      Diet: {
         Sugar: formData.diet.sugar,
         Acid: formData.diet.acid,
       },
-      "Fluoride": getFluorideScore(),
-      "modifying_factor": getModifyingFactorsScore(),
+      Fluoride: getFluorideScore(),
+      modifying_factor: getModifyingFactorsScore(),
     };
 
     try {
-      const res = await fetch("https://web-production-b2442.up.railway.app/predict", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      const res = await fetch(
+        "https://web-production-a8aeb.up.railway.app/predict",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        },
+      );
       if (!res.ok) throw new Error("Gagal deteksi");
       const result = await res.json();
       setDetectionResult(result);
@@ -227,7 +251,10 @@ export default function CariesRiskForm() {
 
       await fetch(`${API_BASE_URL}${PREDICTION_SAVE_ENDPOINT}`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify(payload),
       });
 
@@ -256,14 +283,18 @@ export default function CariesRiskForm() {
             <h1 className="text-4xl font-bold text-gray-800 mb-3">
               Traffic Light Assesment
             </h1>
-            <p className="text-gray-600">Complete the form to evaluate dental caries risk</p>
+            <p className="text-gray-600">
+              Complete the form to evaluate dental caries risk
+            </p>
           </div>
 
           {/* Patient Information */}
           <section className="mb-8 p-6 bg-gradient-to-r from-slate-50 to-gray-50 rounded-2xl border-2 border-gray-200">
             <div className="flex items-center gap-3 mb-4">
               <AlertCircle className="w-6 h-6 text-gray-600" />
-              <h2 className="text-xl font-bold text-gray-800">Patient Information</h2>
+              <h2 className="text-xl font-bold text-gray-800">
+                Patient Information
+              </h2>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -311,7 +342,10 @@ export default function CariesRiskForm() {
                     type="datetime-local"
                     value={formData.date_of_evaluation}
                     onChange={(e) =>
-                      setFormData({ ...formData, date_of_evaluation: e.target.value })
+                      setFormData({
+                        ...formData,
+                        date_of_evaluation: e.target.value,
+                      })
                     }
                     className="w-full p-4 pl-12 text-gray-800 rounded-xl border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
                   />
@@ -324,13 +358,17 @@ export default function CariesRiskForm() {
           <section className="mb-8 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl border-2 border-blue-100">
             <div className="flex items-center gap-3 mb-4">
               <Activity className="w-6 h-6 text-blue-600" />
-              <h2 className="text-xl font-bold text-gray-800">Attitude & Disease Status</h2>
+              <h2 className="text-xl font-bold text-gray-800">
+                Attitude & Disease Status
+              </h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               {attitudeOptions.map((opt) => (
                 <button
                   key={opt.value}
-                  onClick={() => setFormData({ ...formData, attitude: opt.value })}
+                  onClick={() =>
+                    setFormData({ ...formData, attitude: opt.value })
+                  }
                   className={`p-4 rounded-xl font-semibold text-white transition-all ${getRiskColor(opt.value)} ${getActiveClass(formData.attitude === opt.value)}`}
                 >
                   {opt.label}
@@ -350,10 +388,11 @@ export default function CariesRiskForm() {
                 <button
                   key={t}
                   onClick={() => setFormData({ ...formData, saliva_type: t })}
-                  className={`p-4 rounded-xl font-semibold border-2 transition-all ${formData.saliva_type === t
-                    ? "bg-blue-600 text-white border-blue-600 shadow-lg scale-105"
-                    : "bg-white text-gray-700 border-gray-300 hover:border-blue-400"
-                    }`}
+                  className={`p-4 rounded-xl font-semibold border-2 transition-all ${
+                    formData.saliva_type === t
+                      ? "bg-blue-600 text-white border-blue-600 shadow-lg scale-105"
+                      : "bg-white text-gray-700 border-gray-300 hover:border-blue-400"
+                  }`}
                 >
                   {t === "resting" ? "Resting Saliva" : "Stimulated Saliva"}
                 </button>
@@ -362,7 +401,9 @@ export default function CariesRiskForm() {
             {formData.saliva_type === "resting" &&
               ["hydration", "viscosity", "ph"].map((f) => (
                 <div key={f} className="mb-5">
-                  <p className="mb-3 font-semibold text-gray-700 capitalize text-lg">{f}</p>
+                  <p className="mb-3 font-semibold text-gray-700 capitalize text-lg">
+                    {f}
+                  </p>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                     {salivaOptions[f].map((opt) => (
                       <button
@@ -384,7 +425,9 @@ export default function CariesRiskForm() {
             {formData.saliva_type === "stimulated" &&
               ["quantity", "ph", "buffering"].map((f) => (
                 <div key={f} className="mb-5">
-                  <p className="mb-3 font-semibold text-gray-700 capitalize text-lg">{f}</p>
+                  <p className="mb-3 font-semibold text-gray-700 capitalize text-lg">
+                    {f}
+                  </p>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                     {salivaOptions[f].map((opt) => (
                       <button
@@ -416,10 +459,11 @@ export default function CariesRiskForm() {
                 <button
                   key={t}
                   onClick={() => setFormData({ ...formData, plaque_type: t })}
-                  className={`p-4 rounded-xl font-semibold border-2 transition-all ${formData.plaque_type === t
-                    ? "bg-amber-600 text-white border-amber-600 shadow-lg scale-105"
-                    : "bg-white text-gray-700 border-gray-300 hover:border-amber-400"
-                    }`}
+                  className={`p-4 rounded-xl font-semibold border-2 transition-all ${
+                    formData.plaque_type === t
+                      ? "bg-amber-600 text-white border-amber-600 shadow-lg scale-105"
+                      : "bg-white text-gray-700 border-gray-300 hover:border-amber-400"
+                  }`}
                 >
                   {t.toUpperCase()}
                 </button>
@@ -449,13 +493,17 @@ export default function CariesRiskForm() {
           {/* Bacteria */}
           <section className="mb-8 p-6 bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl border-2 border-green-100">
             <div className="flex items-center gap-3 mb-4">
-              <h2 className="text-xl font-bold text-gray-800">Caries History</h2>
+              <h2 className="text-xl font-bold text-gray-800">
+                Caries History
+              </h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               {bacteriaOptions.map((opt) => (
                 <button
                   key={opt.value}
-                  onClick={() => setFormData({ ...formData, bacteria: opt.value })}
+                  onClick={() =>
+                    setFormData({ ...formData, bacteria: opt.value })
+                  }
                   className={`p-4 rounded-xl font-semibold text-white transition-all ${getRiskColor(opt.value)} ${getActiveClass(formData.bacteria === opt.value)}`}
                 >
                   {opt.label}
@@ -503,10 +551,15 @@ export default function CariesRiskForm() {
             </div>
             <div className="space-y-3">
               {Object.keys(formData.fluoride).map((k) => (
-                <label key={k} className="flex items-center gap-3 p-4 bg-white rounded-xl border-2 border-gray-200 hover:border-teal-400 cursor-pointer transition-all">
+                <label
+                  key={k}
+                  className="flex items-center gap-3 p-4 bg-white rounded-xl border-2 border-gray-200 hover:border-teal-400 cursor-pointer transition-all"
+                >
                   <input
                     type="checkbox"
-                    checked={formData.fluoride[k as keyof typeof formData.fluoride]}
+                    checked={
+                      formData.fluoride[k as keyof typeof formData.fluoride]
+                    }
                     onChange={(e) =>
                       setFormData({
                         ...formData,
@@ -525,7 +578,9 @@ export default function CariesRiskForm() {
               ))}
             </div>
             <div className="mt-4 p-4 rounded-xl">
-              <div className={`inline-block px-4 py-2 rounded-lg ${getFluorideColor()}`}>
+              <div
+                className={`inline-block px-4 py-2 rounded-lg ${getFluorideColor()}`}
+              >
                 <p className="text-sm font-semibold text-white">
                   Fluoride Score: {getFluorideScore()}
                 </p>
@@ -537,14 +592,23 @@ export default function CariesRiskForm() {
           <section className="mb-8 p-6 bg-gradient-to-r from-violet-50 to-purple-50 rounded-2xl border-2 border-violet-100">
             <div className="flex items-center gap-3 mb-4">
               <AlertCircle className="w-6 h-6 text-violet-600" />
-              <h2 className="text-xl font-bold text-gray-800">Modifying Factors</h2>
+              <h2 className="text-xl font-bold text-gray-800">
+                Modifying Factors
+              </h2>
             </div>
             <div className="space-y-3">
               {Object.keys(formData.modifying_factors).map((k) => (
-                <label key={k} className="flex items-center gap-3 p-4 bg-white rounded-xl border-2 border-gray-200 hover:border-violet-400 cursor-pointer transition-all">
+                <label
+                  key={k}
+                  className="flex items-center gap-3 p-4 bg-white rounded-xl border-2 border-gray-200 hover:border-violet-400 cursor-pointer transition-all"
+                >
                   <input
                     type="checkbox"
-                    checked={formData.modifying_factors[k as keyof typeof formData.modifying_factors]}
+                    checked={
+                      formData.modifying_factors[
+                        k as keyof typeof formData.modifying_factors
+                      ]
+                    }
                     onChange={(e) =>
                       setFormData({
                         ...formData,
@@ -563,7 +627,9 @@ export default function CariesRiskForm() {
               ))}
             </div>
             <div className="mt-4 p-4 rounded-xl">
-              <div className={`inline-block px-4 py-2 rounded-lg ${getModifyingFactorsColor()}`}>
+              <div
+                className={`inline-block px-4 py-2 rounded-lg ${getModifyingFactorsColor()}`}
+              >
                 <p className="text-sm font-semibold text-white">
                   Modifying Factors Score: {getModifyingFactorsScore()}
                 </p>
@@ -595,30 +661,56 @@ export default function CariesRiskForm() {
           {/* Result */}
           {detectionResult && (
             <div className="p-8 bg-gradient-to-br from-gray-50 to-gray-100 rounded-3xl border-2 border-gray-200 shadow-inner">
-              <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">Detection Result</h2>
+              <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">
+                Detection Result
+              </h2>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 {/* Risk Level */}
-                <div className={`p-6 rounded-2xl shadow-lg border-3 ${detectionResult.result === "high" ? "bg-gradient-to-br from-red-500 to-red-600 border-red-700" :
-                  detectionResult.result === "medium" ? "bg-gradient-to-br from-yellow-500 to-yellow-600 border-yellow-700" :
-                    "bg-gradient-to-br from-green-500 to-green-600 border-green-700"
-                  }`}>
-                  <h3 className="text-lg font-semibold text-white/90 mb-2">Risk Level</h3>
-                  <div className="text-5xl font-black text-white mb-2 capitalize">{detectionResult.result}</div>
-                  <div className="text-white/90 font-semibold">Score: {detectionResult.score}</div>
+                <div
+                  className={`p-6 rounded-2xl shadow-lg border-3 ${
+                    detectionResult.result === "high"
+                      ? "bg-gradient-to-br from-red-500 to-red-600 border-red-700"
+                      : detectionResult.result === "medium"
+                        ? "bg-gradient-to-br from-yellow-500 to-yellow-600 border-yellow-700"
+                        : "bg-gradient-to-br from-green-500 to-green-600 border-green-700"
+                  }`}
+                >
+                  <h3 className="text-lg font-semibold text-white/90 mb-2">
+                    Risk Level
+                  </h3>
+                  <div className="text-5xl font-black text-white mb-2 capitalize">
+                    {detectionResult.result}
+                  </div>
+                  <div className="text-white/90 font-semibold">
+                    Score: {detectionResult.score}
+                  </div>
                 </div>
 
                 {/* Confidence */}
                 <div className="p-6 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl shadow-lg border-3 border-blue-700">
-                  <h3 className="text-lg font-semibold text-white/90 mb-2">Confidence</h3>
-                  <div className="text-5xl font-black text-white mb-4">{detectionResult.confidence}</div>
+                  <h3 className="text-lg font-semibold text-white/90 mb-2">
+                    Confidence
+                  </h3>
+                  <div className="text-5xl font-black text-white mb-4">
+                    {detectionResult.confidence}
+                  </div>
                   <div className="space-y-2">
-                    {Object.entries(detectionResult.confidence_detail).map(([key, value]: [string, any]) => (
-                      <div key={key} className="flex justify-between items-center bg-white/20 p-2 rounded-lg capitalize">
-                        <span className="font-semibold text-white">{key}:</span>
-                        <span className="font-bold text-white">{value.toFixed(1)}%</span>
-                      </div>
-                    ))}
+                    {Object.entries(detectionResult.confidence_detail).map(
+                      ([key, value]: [string, any]) => (
+                        <div
+                          key={key}
+                          className="flex justify-between items-center bg-white/20 p-2 rounded-lg capitalize"
+                        >
+                          <span className="font-semibold text-white">
+                            {key}:
+                          </span>
+                          <span className="font-bold text-white">
+                            {value.toFixed(1)}%
+                          </span>
+                        </div>
+                      ),
+                    )}
                   </div>
                 </div>
               </div>
@@ -628,8 +720,12 @@ export default function CariesRiskForm() {
                 <div className="flex items-start gap-3">
                   <AlertCircle className="w-6 h-6 text-amber-700 mt-1 flex-shrink-0" />
                   <div>
-                    <h3 className="text-lg font-bold text-gray-800 mb-2">Description & Recommendation</h3>
-                    <p className="text-gray-700 leading-relaxed">{detectionResult.description}</p>
+                    <h3 className="text-lg font-bold text-gray-800 mb-2">
+                      Description & Recommendation
+                    </h3>
+                    <p className="text-gray-700 leading-relaxed">
+                      {detectionResult.description}
+                    </p>
                   </div>
                 </div>
               </div>
