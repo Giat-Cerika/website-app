@@ -2,7 +2,17 @@
 
 import { useState, useEffect, useRef } from "react";
 import Swal from "sweetalert2";
-import { Plus, Pencil, Trash2, X, Eye, FileText, Calendar, User, Image as ImageIcon } from "lucide-react";
+import {
+  Plus,
+  Pencil,
+  Trash2,
+  X,
+  Eye,
+  FileText,
+  Calendar,
+  User,
+  Image as ImageIcon,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toastSuccess, toastError } from "@/lib/toast";
 import { useMateriStore } from "@/stores/useMaterialStore";
@@ -11,13 +21,8 @@ import "@/components/styles/material.css";
 
 export default function MateriPage() {
   const router = useRouter();
-  const {
-    materi,
-    isLoading,
-    fetchMateri,
-    updateMateri,
-    deleteMateri,
-  } = useMateriStore();
+  const { materi, isLoading, fetchMateri, updateMateri, deleteMateri } =
+    useMateriStore();
 
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
@@ -48,7 +53,8 @@ export default function MateriPage() {
         if (!(window as any).jQuery) {
           await new Promise((resolve, reject) => {
             const jquery = document.createElement("script");
-            jquery.src = "https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js";
+            jquery.src =
+              "https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js";
             jquery.onload = resolve;
             jquery.onerror = () => reject("Gagal memuat jQuery");
             document.head.appendChild(jquery);
@@ -86,15 +92,12 @@ export default function MateriPage() {
               onInit: () => {
                 summernoteInitialized = true;
               },
-              onError: (err: any) => {
-              }
-            }
+              onError: (err: any) => {},
+            },
           });
         } else {
         }
-
-      } catch (err) {
-      }
+      } catch (err) {}
     };
 
     loadSummernote();
@@ -121,8 +124,8 @@ export default function MateriPage() {
           callbacks: {
             onChange: function (contents: string) {
               setDescription(contents);
-            }
-          }
+            },
+          },
         });
 
         if (description) {
@@ -176,7 +179,6 @@ export default function MateriPage() {
 
     setIsEditOpen(true);
   };
-
 
   const handleView = (item: Materi) => {
     setSelected(item);
@@ -256,7 +258,9 @@ export default function MateriPage() {
         <div className="text-center py-12 animate-fadeIn">
           <FileText className="w-20 h-20 text-gray-400 mx-auto mb-4" />
           <p className="text-gray-600 text-lg">Belum ada materi pembelajaran</p>
-          <p className="text-gray-500 text-sm mt-2">Klik tombol "Tambah Materi" untuk membuat materi baru</p>
+          <p className="text-gray-500 text-sm mt-2">
+            Klik tombol "Tambah Materi" untuk membuat materi baru
+          </p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-fadeIn">
@@ -318,10 +322,11 @@ export default function MateriPage() {
         <button
           onClick={() => setPage((prev) => Math.max(1, prev - 1))}
           disabled={page === 1}
-          className={`px-4 py-2 text-gray-800 rounded-lg border ${page === 1
+          className={`px-4 py-2 text-gray-800 rounded-lg border ${
+            page === 1
               ? "bg-gray-200 cursor-not-allowed"
               : "bg-white hover:bg-gray-100"
-            }`}
+          }`}
         >
           Prev
         </button>
@@ -332,11 +337,12 @@ export default function MateriPage() {
 
         <button
           onClick={() => setPage((prev) => prev + 1)}
-          disabled={materi.length < per_page}  // <-- Tambah ini
-          className={`px-4 text-gray-800 py-2 rounded-lg border ${materi.length < per_page
+          disabled={materi.length < per_page} // <-- Tambah ini
+          className={`px-4 text-gray-800 py-2 rounded-lg border ${
+            materi.length < per_page
               ? "bg-gray-200 cursor-not-allowed"
               : "bg-white hover:bg-gray-100"
-            }`}
+          }`}
         >
           Next
         </button>
@@ -345,7 +351,6 @@ export default function MateriPage() {
       {isDetailOpen && selected && (
         <div className="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center px-4">
           <div className="bg-white rounded-xl w-full max-w-4xl shadow-xl animate-fadeIn max-h-[90vh] overflow-y-auto overscroll-contain">
-
             <div className="flex justify-between items-center p-4 border-b sticky top-0 bg-white z-10">
               <h3 className="text-3xl font-bold text-gray-800 mt-4">
                 {selected.title}
@@ -361,9 +366,7 @@ export default function MateriPage() {
             <div className="m-6 flex flex-wrap gap-4 text-sm text-gray-600">
               <div className="flex items-center gap-2">
                 <Calendar className="w-5 h-5 text-blue-600" />
-                <span>
-                  {selected.created_at}
-                </span>
+                <span>{selected.created_at}</span>
               </div>
 
               <div className="flex items-center gap-2">
@@ -371,28 +374,29 @@ export default function MateriPage() {
                 <span>{selected.created_by || "Admin"}</span>
               </div>
 
-              {selected.material_images && selected.material_images.length > 0 && (
-                <div className="flex items-center gap-2">
-                  <ImageIcon className="w-5 h-5 text-purple-600" />
-                  <span>{selected.material_images.length} Gambar</span>
-                </div>
-              )}
+              {selected.material_images &&
+                selected.material_images.length > 0 && (
+                  <div className="flex items-center gap-2">
+                    <ImageIcon className="w-5 h-5 text-purple-600" />
+                    <span>{selected.material_images.length} Gambar</span>
+                  </div>
+                )}
             </div>
 
             <div className="p-6 space-y-6">
               <div className="rounded-lg overflow-hidden shadow-lg relative">
-
-                {selected.material_images && selected.material_images.length > 0 ? (
+                {selected.material_images &&
+                selected.material_images.length > 0 ? (
                   <img
                     src={selected.material_images[selectedGalleryIndex]}
                     alt="Cover Gallery"
-                    className="w-full h-96 object-cover"
+                    className="w-full max-h-[70vh] object-contain bg-gray-100"
                   />
                 ) : selected.cover ? (
                   <img
                     src={selected.cover}
                     alt="Cover"
-                    className="w-full h-96 object-cover"
+                    className="w-full max-h-[70vh] object-contain bg-gray-100"
                   />
                 ) : (
                   <div className="w-full h-96 bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center">
@@ -400,22 +404,24 @@ export default function MateriPage() {
                   </div>
                 )}
 
-                {selected.material_images && selected.material_images.length > 0 && (
-                  <div className="flex gap-3 p-4 mt-3 overflow-x-auto bg-gray-50 rounded-lg">
-                    {selected.material_images.map((img, index) => (
-                      <img
-                        key={index}
-                        src={img}
-                        alt={`gallery-${index}`}
-                        className={`w-16 h-16 rounded-lg object-cover cursor-pointer transition-all border-2 ${index === selectedGalleryIndex
-                          ? "border-blue-600 scale-105"
-                          : "border-transparent opacity-80 hover:opacity-100"
+                {selected.material_images &&
+                  selected.material_images.length > 0 && (
+                    <div className="flex gap-3 p-4 mt-3 overflow-x-auto bg-gray-50 rounded-lg">
+                      {selected.material_images.map((img, index) => (
+                        <img
+                          key={index}
+                          src={img}
+                          alt={`gallery-${index}`}
+                          className={`w-16 h-16 rounded-lg object-cover cursor-pointer transition-all border-2 ${
+                            index === selectedGalleryIndex
+                              ? "border-blue-600 scale-105"
+                              : "border-transparent opacity-80 hover:opacity-100"
                           }`}
-                        onClick={() => setSelectedGalleryIndex(index)}
-                      />
-                    ))}
-                  </div>
-                )}
+                          onClick={() => setSelectedGalleryIndex(index)}
+                        />
+                      ))}
+                    </div>
+                  )}
               </div>
 
               <div className="">
