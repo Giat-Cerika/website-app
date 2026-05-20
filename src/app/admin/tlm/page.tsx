@@ -210,7 +210,7 @@ export default function CariesRiskForm() {
 
     try {
       const res = await fetch(
-        "https://web-production-a8aeb.up.railway.app/predict",
+        "https://model-app-production-0cab.up.railway.app/predict",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -388,11 +388,10 @@ export default function CariesRiskForm() {
                 <button
                   key={t}
                   onClick={() => setFormData({ ...formData, saliva_type: t })}
-                  className={`p-4 rounded-xl font-semibold border-2 transition-all ${
-                    formData.saliva_type === t
+                  className={`p-4 rounded-xl font-semibold border-2 transition-all ${formData.saliva_type === t
                       ? "bg-blue-600 text-white border-blue-600 shadow-lg scale-105"
                       : "bg-white text-gray-700 border-gray-300 hover:border-blue-400"
-                  }`}
+                    }`}
                 >
                   {t === "resting" ? "Resting Saliva" : "Stimulated Saliva"}
                 </button>
@@ -459,11 +458,10 @@ export default function CariesRiskForm() {
                 <button
                   key={t}
                   onClick={() => setFormData({ ...formData, plaque_type: t })}
-                  className={`p-4 rounded-xl font-semibold border-2 transition-all ${
-                    formData.plaque_type === t
+                  className={`p-4 rounded-xl font-semibold border-2 transition-all ${formData.plaque_type === t
                       ? "bg-amber-600 text-white border-amber-600 shadow-lg scale-105"
                       : "bg-white text-gray-700 border-gray-300 hover:border-amber-400"
-                  }`}
+                    }`}
                 >
                   {t.toUpperCase()}
                 </button>
@@ -606,7 +604,7 @@ export default function CariesRiskForm() {
                     type="checkbox"
                     checked={
                       formData.modifying_factors[
-                        k as keyof typeof formData.modifying_factors
+                      k as keyof typeof formData.modifying_factors
                       ]
                     }
                     onChange={(e) =>
@@ -668,13 +666,12 @@ export default function CariesRiskForm() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 {/* Risk Level */}
                 <div
-                  className={`p-6 rounded-2xl shadow-lg border-3 ${
-                    detectionResult.result === "high"
+                  className={`p-6 rounded-2xl shadow-lg border-3 ${detectionResult.result === "high"
                       ? "bg-gradient-to-br from-red-500 to-red-600 border-red-700"
                       : detectionResult.result === "medium"
                         ? "bg-gradient-to-br from-yellow-500 to-yellow-600 border-yellow-700"
                         : "bg-gradient-to-br from-green-500 to-green-600 border-green-700"
-                  }`}
+                    }`}
                 >
                   <h3 className="text-lg font-semibold text-white/90 mb-2">
                     Risk Level
