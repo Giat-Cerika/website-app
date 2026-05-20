@@ -210,7 +210,7 @@ export default function CariesRiskForm() {
 
     try {
       const res = await fetch(
-        "https://web-production-a8aeb.up.railway.app/predict",
+        "https://model-app-production-0cab.up.railway.app/predict",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
