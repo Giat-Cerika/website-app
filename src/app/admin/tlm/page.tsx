@@ -209,11 +209,14 @@ export default function CariesRiskForm() {
     };
 
     try {
-      const res = await fetch("http://103.126.117.102:5000/predict", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      const res = await fetch(
+        "https://rinel-api.duckdns.org/giat-cerika-model/predict",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        },
+      );
       if (!res.ok) throw new Error("Gagal deteksi");
       const result = await res.json();
       setDetectionResult(result);
